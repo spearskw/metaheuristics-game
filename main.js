@@ -9,16 +9,19 @@ function main() {
         x.push(i);
     }
 
+    let fn = squiggles
+
     var guess = 9.9
-    let scores = [squiggles(guess)]
-    requestAnimationFrame(() => step(truth, search, x, guess, scores, squiggles));
+    let scores = [fn(guess)]
+    requestAnimationFrame(() => step(truth, search, x, guess, scores, fn));
 }
 
 function step(truth, search, x, bestGuess, scores, fn) {
     let y = x.map(fn);
     plotFunction(truth, x, y);
 
-    let candidate = nearby(bestGuess, 0.2)
+    // let candidate = nearby(bestGuess, 0.2)
+    let candidate = anneal(bestGuess, 2.5, 0.01, scores.length / 200);
     let possibleScore = fn(candidate);
     if (possibleScore < scores[scores.length - 1]) {
         scores.push(possibleScore);
@@ -26,7 +29,7 @@ function step(truth, search, x, bestGuess, scores, fn) {
     } else {
         scores.push(scores[scores.length - 1]);
     }
-    plotCandidate(truth, candidate, squiggles);
+    plotCandidate(truth, candidate, fn);
     plotFunction(search, x, scores)
     if (scores.length < 200) {
         setTimeout(() => {
@@ -35,12 +38,18 @@ function step(truth, search, x, bestGuess, scores, fn) {
     }
 }
 
+// heuristics
 function random() {
     return Math.random() * 20 - 10;
 }
 
 function nearby(base, stepSize) {
     return base + Math.random() * stepSize * 2 - stepSize;
+}
+
+function anneal(base, bigStep, smallStep, progress) {
+    let stepSize = bigStep + (smallStep - bigStep) * progress
+    return base + Math.random() * stepSize * 2 - stepSize
 }
 
 function setupCanvas(id) {
@@ -96,6 +105,7 @@ function plotFunction(canvas, x, y) {
     ctx.closePath();
 }
 
+// sample functions
 function line(x) {
     return x;
 }
@@ -105,5 +115,25 @@ function square(x) {
 }
 
 function squiggles(x) {
-    return (x * x) / 15 + 1.5 * Math.sin(x * 1.4) - 2;
+    return ((x+5) * (x+5)) / 20 + 1.5 * Math.sin(x * 1.4) - 2;
+}
+
+function needle(x) {
+    if (-1 < x && x < 1) {
+        return 0
+    }
+    return 3
+}
+
+function deceptive(x) {
+    if (x < -9) {
+        return 0
+    }
+    if (x < 9) {
+        return x / 2
+    }
+    if (x >= 9) {
+        return -8
+    }
+
 }
