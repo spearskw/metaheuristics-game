@@ -14,6 +14,26 @@ function main() {
     let y = x.map(squiggles)
 
     plotFunction(ctx, canvas, x, y);
+    let candidate = Math.random() * 20 - 10;
+    console.log(candidate);
+    plotCandidate(ctx, canvas, candidate, squiggles);
+}
+
+function plotCandidate(ctx, canvas, x, fn) {
+    let u = x * canvas.width / 20;
+    let v = fn(x) * canvas.height / 20;
+
+    ctx.strokeStyle = '#1f6b91';
+    ctx.lineWidth = 4;
+
+    ctx.beginPath();
+    ctx.moveTo(u + 10, v + 10);
+    ctx.lineTo(u - 10, v - 10);
+    ctx.stroke();
+    ctx.moveTo(u + 10, v - 10);
+    ctx.lineTo(u - 10, v + 10);
+    ctx.stroke()
+    ctx.closePath();
 }
 
 function plotFunction(ctx, canvas, x, y) {
@@ -37,6 +57,7 @@ function plotFunction(ctx, canvas, x, y) {
         ctx.lineTo(u[i+1], v[i+1]);
         ctx.stroke();
     }
+    ctx.closePath();
 }
 
 function line(x) {
