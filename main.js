@@ -1,11 +1,8 @@
 window.onload = main
 
 function main() {
-    const canvas = document.getElementById('function');
-    const ctx = canvas.getContext('2d');
-
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    let truth = setupCanvas("truth");
+    let search = setupCanvas("search");
 
     let x = [];
     for (let i = -10; i< 10; i+= 0.1) {
@@ -13,13 +10,30 @@ function main() {
     }
     let y = x.map(squiggles)
 
-    plotFunction(ctx, canvas, x, y);
+    plotFunction(truth, x, y);
     let candidate = Math.random() * 20 - 10;
     console.log(candidate);
-    plotCandidate(ctx, canvas, candidate, squiggles);
+    plotCandidate(truth, candidate, squiggles);
+    plotCandidate(search, candidate, squiggles);
 }
 
-function plotCandidate(ctx, canvas, x, fn) {
+function setupCanvas(id) {
+    let canvas = document.getElementById(id);
+    let ctx = canvas.getContext('2d');
+
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+
+    // put the origin at the center
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    // positive y is in the up direction
+    ctx.scale(1, -1);
+
+    return canvas;
+}
+
+function plotCandidate(canvas, x, fn) {
+    let ctx = canvas.getContext('2d');
     let u = x * canvas.width / 20;
     let v = fn(x) * canvas.height / 20;
 
@@ -36,13 +50,9 @@ function plotCandidate(ctx, canvas, x, fn) {
     ctx.closePath();
 }
 
-function plotFunction(ctx, canvas, x, y) {
+function plotFunction(canvas, x, y) {
+    let ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // put the origin at the center
-    ctx.translate(canvas.width / 2, canvas.height / 2);
-    // positive y is in the up direction
-    ctx.scale(1, -1);
 
     // scale to -10..10
     let u = x.map(it => it * canvas.width / 20);
@@ -69,5 +79,5 @@ function square(x) {
 }
 
 function squiggles(x) {
-    return (-x*x)/20 + 1.5*Math.sin(x*1.4) + 2;
+    return (x*x)/15 + 1.5*Math.sin(x*1.4) - 2;
 }
