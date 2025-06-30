@@ -2,8 +2,8 @@ export function line(x) {
     return x;
 }
 
-export function parabola(x) {
-    return x * x;
+export function smooth_valley(x) {
+    return (x+5)*(x+5) / 20 - 2
 }
 
 export function bumpy_valley(x) {
@@ -27,8 +27,4 @@ export function deceptive(x) {
     if (x >= 9) {
         return -8
     }
-}
-
-export function smooth_valley(x) {
-    return (x+5)*(x+5) / 20 - 2
 }
