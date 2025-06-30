@@ -1,30 +1,33 @@
-import {anneal, nearby} from "./strategies.js";
-import {squiggles} from "./functions.js";
-import {plotCandidate, plotFunction, plotScore, setupCanvas} from "./plotting.js";
+import * as strategies from "./strategies.js";
+import * as functions from "./functions.js";
+import {clearFunction, clearScore, plotCandidate, plotFunction, plotScore, setupCanvas} from "./plotting.js";
 
 window.onload = main
 
 function main() {
-    let truth = setupCanvas("truth", true);
-    let search = setupCanvas("search", false);
+    let functionCanvas = setupCanvas("function", true);
+    let scoreCanvas = setupCanvas("score", false);
 
     let x = [];
     for (let i = -10; i < 10; i += 0.1) {
         x.push(i);
     }
 
-    let fn = squiggles
+    let fn = functions.bumpy_valley
     let guess = 9.9
     let scores = [fn(guess)]
 
-    requestAnimationFrame(() => step(truth, search, x, guess, scores, fn, 100));
+    step(functionCanvas, scoreCanvas, x, guess, scores, fn, 100);
 }
 
-function step(truth, search, x, bestGuess, scores, fn, numSteps) {
-
+function step(functionCanvas, scoreCanvas, x, bestGuess, scores, fn, numSteps) {
     // implement our strategy
-    // let candidate = nearby(bestGuess, 0.2)
-    let candidate = anneal(bestGuess, 1.5, .01, scores.length / 200);
+    let candidate = strategies.nearby(bestGuess, .5)
+    // let candidate = strategies.anneal(bestGuess, 4, .01, scores.length / numSteps);
+    // let candidate = strategies.random()
+
+    // clamp so that we can always see it
+    candidate = Math.max(Math.min(candidate, 10), -10)
 
     // update scores and best guess
     let possibleScore = fn(candidate);
@@ -37,13 +40,15 @@ function step(truth, search, x, bestGuess, scores, fn, numSteps) {
 
     // update plots
     let y = x.map(fn);
-    plotFunction(truth, x, y);
-    plotCandidate(truth, candidate, fn, '#7e9daa');
-    plotCandidate(truth, bestGuess, fn, '#22b9ef');
-    plotScore(search, scores, numSteps)
+    clearFunction(functionCanvas)
+    clearScore(scoreCanvas)
+    plotFunction(functionCanvas, x, y);
+    plotCandidate(functionCanvas, candidate, fn, '#7e9daa');
+    plotCandidate(functionCanvas, bestGuess, fn, '#22b9ef');
+    plotScore(scoreCanvas, scores, numSteps)
     if (scores.length < numSteps) {
         setTimeout(() => {
-            requestAnimationFrame(() => step(truth, search, x, bestGuess, scores, fn, numSteps));
+            requestAnimationFrame(() => step(functionCanvas, scoreCanvas, x, bestGuess, scores, fn, numSteps));
         }, 300)
     }
 }

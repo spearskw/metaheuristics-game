@@ -35,9 +35,13 @@ export function plotCandidate(canvas, x, fn, color) {
     ctx.closePath();
 }
 
-export function plotFunction(canvas, x, y) {
+export function clearFunction(canvas) {
     let ctx = canvas.getContext('2d');
     ctx.clearRect(-canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
+}
+
+export function plotFunction(canvas, x, y) {
+    let ctx = canvas.getContext('2d');
 
     // scale to -10..10
     let u = x.map(it => it * canvas.width / 20);
@@ -55,10 +59,13 @@ export function plotFunction(canvas, x, y) {
     ctx.closePath();
 }
 
-export function plotScore(canvas, scores, numSteps) {
+export function clearScore(canvas) {
     let ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
 
+export function plotScore(canvas, scores, numSteps) {
+    let ctx = canvas.getContext('2d');
     // scale to 0..numSteps for x and -10..10 for y
     let u = []
     for (let i = 0; i < numSteps; i++) {
