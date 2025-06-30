@@ -1,36 +1,44 @@
 import * as strategies from "./strategies.js";
-import * as functions from "./functions.js";
-import {clear, plotCandidate, plotFunction, plotScore, setupCanvas} from "./plotting.js";
+import * as objectives from "./objectives.js";
+import {clear, plotCandidate, plotObjective, plotScore, setupCanvas} from "./plotting.js";
 
 window.onload = main
 
 function main() {
-    let functionCanvas = setupCanvas("function", true);
-    let scoreCanvas = setupCanvas("score", false);
+    let config = {
+        objective: objectives.deceptive,
+        initialGuess: 7,
+        numSteps: 100,
+        millisBetweenFrames: 100,
+        strategy: (val, progress) => strategies.anneal(val, 2.5, 0.1, progress)
+        // strategy: (val, progress) => strategies.nearby(val, 0.4)
+    }
 
+    optimize(config)
+}
+
+function optimize(config) {
     let x = [];
     for (let i = -10; i < 10; i += .1) {
         x.push(i);
     }
 
-    let fn = functions.smooth_valley
-    let guess = 5
-    let scores = [fn(guess)]
+    let scores = [config.objective(config.initialGuess)]
 
-    step(functionCanvas, scoreCanvas, x, guess, scores, fn, 50);
+    setupCanvas("objective")
+    setupCanvas("score")
+
+    step(config, x, config.initialGuess, scores);
 }
 
-function step(functionCanvas, scoreCanvas, x, bestGuess, scores, fn, numSteps) {
-    // implement our strategy
-    // let candidate = strategies.nearby(bestGuess, 4)
-    let candidate = strategies.anneal(bestGuess, 2.5, .01, scores.length / numSteps);
-    // let candidate = strategies.random()
+function step(config, x, bestGuess, scores) {
+    let candidate = config.strategy(bestGuess, scores.length / config.numSteps);
 
     // clamp so that we can always see it
     candidate = Math.max(Math.min(candidate, 10), -10)
 
     // update scores and best guess
-    let possibleScore = fn(candidate);
+    let possibleScore = config.objective(candidate);
     if (possibleScore < scores[scores.length - 1]) {
         scores.push(possibleScore);
         bestGuess = candidate;
@@ -39,15 +47,19 @@ function step(functionCanvas, scoreCanvas, x, bestGuess, scores, fn, numSteps) {
     }
 
     // update plots
-    clear(functionCanvas)
+    let objectiveCanvas = document.getElementById("objective");
+    let scoreCanvas = document.getElementById("score");
+    clear(objectiveCanvas)
     clear(scoreCanvas)
-    plotFunction(functionCanvas, x, x.map(fn));
-    plotCandidate(functionCanvas, candidate, fn(candidate), '#7e9daa');
-    plotCandidate(functionCanvas, bestGuess, fn(bestGuess), '#22b9ef');
-    plotScore(scoreCanvas, scores, numSteps)
-    if (scores.length < numSteps) {
+    plotObjective(objectiveCanvas, x, x.map(config.objective));
+    plotCandidate(objectiveCanvas, candidate, config.objective(candidate), '#7e9daa');
+    plotCandidate(objectiveCanvas, bestGuess, config.objective(bestGuess), '#22b9ef');
+    plotScore(scoreCanvas, scores, config.numSteps)
+
+    // iterate
+    if (scores.length < config.numSteps) {
         setTimeout(() => {
-            requestAnimationFrame(() => step(functionCanvas, scoreCanvas, x, bestGuess, scores, fn, numSteps));
-        }, 200)
+            requestAnimationFrame(() => step(config, x, bestGuess, scores));
+        }, config.millisBetweenFrames);
     }
 }

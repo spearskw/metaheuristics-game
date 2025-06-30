@@ -11,7 +11,7 @@ export function plotCandidate(canvas, x, y, color) {
     plotMarker(canvas, x, y, -10, 10, -10, 10, color);
 }
 
-export function plotFunction(canvas, x, y) {
+export function plotObjective(canvas, x, y) {
     plot(canvas, x, y, -10, 10, -10, 10);
 }
 
@@ -28,7 +28,7 @@ export function plotScore(canvas, scores, numSteps) {
     plot(canvas, x, scores, 0, numSteps - 1, -10, 10);
 }
 
-export function plot(canvas, x, y, xmin, xmax, ymin, ymax) {
+function plot(canvas, x, y, xmin, xmax, ymin, ymax) {
     let ctx = canvas.getContext('2d');
 
     let u = x.map(it => scaleX(it, xmin, xmax, canvas.width))
