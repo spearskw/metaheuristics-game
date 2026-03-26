@@ -26,6 +26,8 @@ function main() {
         const submitButton = document.getElementById("startButton");
         submitButton.disabled = true;
 
+        hideControls();
+
         optimize(config);
     })
 
@@ -36,10 +38,12 @@ function main() {
 
     const tryAgainButton = document.getElementById("tryAgainButton");
     tryAgainButton.addEventListener("click", () => {
-        let objectiveCanvas = document.getElementById("objective");
-        let scoreCanvas = document.getElementById("score");
+        const objectiveCanvas = document.getElementById("objective");
+        const scoreCanvas = document.getElementById("score");
         clear(objectiveCanvas)
         clear(scoreCanvas)
+        const submitButton = document.getElementById("startButton");
+        submitButton.disabled = false;
     })
 }
 
@@ -51,18 +55,18 @@ function optimize(config) {
 
     let scores = [config.objective(config.initialGuess)]
 
-    setupCanvas("objective")
-    setupCanvas("score")
+    setupCanvas("objective");
+    setupCanvas("score");
 
     step(config, x, config.initialGuess, scores);
 }
 
 function step(config, x, bestGuess, scores) {
-    let candidate = config.strategy.forager(bestGuess, config.stepSize)
+    let candidate = config.strategy.forager(bestGuess, config.stepSize);
     // let candidate = config.strategy(bestGuess, scores.length / config.numSteps);
 
     // clamp so that we can always see it
-    candidate = Math.max(Math.min(candidate, 10), -10)
+    candidate = Math.max(Math.min(candidate, 10), -10);
 
     // update scores and best guess
     let possibleScore = config.objective(candidate);
@@ -76,12 +80,12 @@ function step(config, x, bestGuess, scores) {
     // update plots
     let objectiveCanvas = document.getElementById("objective");
     let scoreCanvas = document.getElementById("score");
-    clear(objectiveCanvas)
-    clear(scoreCanvas)
+    clear(objectiveCanvas);
+    clear(scoreCanvas);
     plotObjective(objectiveCanvas, x, x.map(config.objective));
     plotCandidate(objectiveCanvas, bestGuess, config.objective(bestGuess), '#22b9ef');
     plotCandidate(objectiveCanvas, candidate, config.objective(candidate), '#7e9daa');
-    plotScore(scoreCanvas, scores, config.numSteps)
+    plotScore(scoreCanvas, scores, config.numSteps);
 
     // iterate
     if (scores.length < config.numSteps) {
@@ -89,7 +93,16 @@ function step(config, x, bestGuess, scores) {
             requestAnimationFrame(() => step(config, x, bestGuess, scores));
         }, config.millisBetweenFrames);
     } else {
-        const submitButton = document.getElementById("startButton");
-        submitButton.disabled = false;
+        showControls();
     }
+}
+
+function hideControls() {
+    const controls = document.getElementById("controls")
+    controls.style.display = "none";
+}
+
+function showControls() {
+    const controls = document.getElementById("controls")
+    controls.style.display = "flex";
 }

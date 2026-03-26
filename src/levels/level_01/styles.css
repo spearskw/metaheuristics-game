@@ -14,6 +14,10 @@ canvas {
     gap: 10px;
 }
 
+#controls {
+    display: none;
+}
+
 .container {
     margin: 10px;
     display: flex;
