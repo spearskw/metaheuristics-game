@@ -10,19 +10,23 @@
 <h1>Level 3</h1>
 <div class="container">
     <form id="form">
-        <label for="strategy">Choose the strategy:</label>
-        <select name="strategy" id="strategy">
-            <option value="hill-climb">Hill climb</option>
-        </select>
-        <label for="stepSize">Choose step size</label>
-        <select name="stepSize" id="stepSize">
-            <option value="0.1">0.1</option>
-            <option value="0.5">0.5</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="5">5</option>
-            <option value="10">10</option>
-        </select>
+        <div class="form-field">
+            <label for="strategy">Choose the strategy:</label>
+            <select name="strategy" id="strategy">
+                <option value="hill-climb">Hill climb</option>
+            </select>
+        </div>
+        <div class="form-field">
+            <label for="stepSize">Choose step size</label>
+            <select name="stepSize" id="stepSize">
+                <option value="0.1">0.1</option>
+                <option value="0.5">0.5</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+            </select>
+        </div>
         <button type="submit" id="startButton">Start</button>
     </form>
 </div>

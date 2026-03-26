@@ -10,7 +10,7 @@ canvas {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-content: space-between;
+    align-items: center;
     gap: 10px;
 }
 
@@ -30,4 +30,8 @@ canvas {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+#startButton {
+    width: 50%;
 }
