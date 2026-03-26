@@ -1,10 +1,45 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <title>Level 1</title>
     <script src="main.js" type="module"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<canvas id="objective"></canvas>
-<canvas id="score"></canvas>
+<div class="container">
+    <form id="form">
+        <label for="strategy">Choose the strategy:</label>
+        <select name="strategy" id="strategy">
+            <option value="hill-climb">Hill climb</option>
+        </select>
+        <label for="stepSize">Choose step size</label>
+        <select name="stepSize" id="stepSize">
+            <option value="0.1">0.1</option>
+            <option value="0.5">0.5</option>
+            <option value="1">1</option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+        </select>
+        <button type="submit" id="startButton">Start</button>
+    </form>
+</div>
+<div class="container">
+    <div class="canvas-tile">
+        <div>
+            Objective
+        </div>
+        <canvas id="objective"></canvas>
+    </div>
+    <div class="canvas-tile">
+        <div>
+            Progress
+        </div>
+        <canvas id="score"></canvas>
+    </div>
+</div>
+<div class="container">
+    <button id="tryAgainButton">Try again</button>
+    <button id="nextLevelButton">Next level</button>
+</div>
 </body>
 </html>

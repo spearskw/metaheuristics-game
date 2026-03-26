@@ -1,23 +1,46 @@
 import {clear, plotCandidate, plotObjective, plotScore, setupCanvas} from "../../plotting/plotting.js";
-import {make_random_guess} from "../../strategies/forager/random.js";
 import {always_accept_if_better} from "../../strategies/acceptor/always_if_better.js";
 import {smooth_valley} from "../../objectives/smooth_valley.js";
+import {hillClimb} from "../../strategies/forager/hill-climb.js";
 
 window.onload = main
 
 function main() {
     let config = {
         objective: smooth_valley,
-        initialGuess: 7,
-        numSteps: 100,
-        millisBetweenFrames: 100,
+        initialGuess: 9,
+        numSteps: 20,
+        millisBetweenFrames: 200,
         strategy: {
-            forager: make_random_guess,
             acceptor: always_accept_if_better
         }
     }
 
-    optimize(config)
+    const form = document.getElementById("form");
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        config.strategy.forager = hillClimb;
+        config.stepSize = e.target.stepSize.value;
+
+        const submitButton = document.getElementById("startButton");
+        submitButton.disabled = true;
+
+        optimize(config);
+    })
+
+    const nextLevelButton = document.getElementById("nextLevelButton");
+    nextLevelButton.addEventListener("click", () => {
+        window.location.href = "../level_02/index.html"
+    })
+
+    const tryAgainButton = document.getElementById("tryAgainButton");
+    tryAgainButton.addEventListener("click", () => {
+        let objectiveCanvas = document.getElementById("objective");
+        let scoreCanvas = document.getElementById("score");
+        clear(objectiveCanvas)
+        clear(scoreCanvas)
+    })
 }
 
 function optimize(config) {
@@ -35,7 +58,7 @@ function optimize(config) {
 }
 
 function step(config, x, bestGuess, scores) {
-    let candidate = config.strategy.forager()
+    let candidate = config.strategy.forager(bestGuess, config.stepSize)
     // let candidate = config.strategy(bestGuess, scores.length / config.numSteps);
 
     // clamp so that we can always see it
@@ -56,8 +79,8 @@ function step(config, x, bestGuess, scores) {
     clear(objectiveCanvas)
     clear(scoreCanvas)
     plotObjective(objectiveCanvas, x, x.map(config.objective));
-    plotCandidate(objectiveCanvas, candidate, config.objective(candidate), '#7e9daa');
     plotCandidate(objectiveCanvas, bestGuess, config.objective(bestGuess), '#22b9ef');
+    plotCandidate(objectiveCanvas, candidate, config.objective(candidate), '#7e9daa');
     plotScore(scoreCanvas, scores, config.numSteps)
 
     // iterate
@@ -65,5 +88,8 @@ function step(config, x, bestGuess, scores) {
         setTimeout(() => {
             requestAnimationFrame(() => step(config, x, bestGuess, scores));
         }, config.millisBetweenFrames);
+    } else {
+        const submitButton = document.getElementById("startButton");
+        submitButton.disabled = false;
     }
 }

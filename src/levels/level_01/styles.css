@@ -5,3 +5,25 @@ canvas {
     width: 500px;
     height: 500px;
 }
+
+#form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: space-between;
+    gap: 10px;
+}
+
+.container {
+    margin: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 3px;
+}
+
+.canvas-tile {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
