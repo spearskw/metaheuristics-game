@@ -1,0 +1,54 @@
+h1 {
+    font-family: Calibri, sans-serif;
+}
+
+.layout {
+    display: flex;
+    gap: 2rem;
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 180px;
+    font-family: Calibri, sans-serif;
+}
+
+.controls input[type="range"] {
+    width: 180px;
+}
+
+.controls p {
+    margin: 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+.canvases {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.canvas-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: Calibri, sans-serif;
+}
+
+#polygon-canvas {
+    border: 2px solid #cbd5e1;
+    background-color: #000;
+    border-radius: 0.75rem;
+    width: 320px;
+    height: 480px;
+}
+
+#score-canvas {
+    border: 2px solid #cbd5e1;
+    background-color: #f8fafc;
+    border-radius: 0.75rem;
+    width: 480px;
+    height: 480px;
+}

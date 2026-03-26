@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Level 10 - Mona Lisa Polygons</title>
+    <script src="main.js" type="module"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<h1>Paintings from Polygons</h1>
+<div class="layout">
+    <div class="controls">
+        <label for="polygons">Polygons: <span id="polygons-value">50</span></label>
+        <input type="range" id="polygons" min="10" max="200" value="50" step="10">
+
+        <label for="iterations">Iterations: <span id="iterations-value">5000</span></label>
+        <input type="range" id="iterations" min="500" max="50000" value="5000" step="500">
+
+        <label for="temperature">Initial Temp: <span id="temperature-value">1000</span></label>
+        <input type="range" id="temperature" min="100" max="5000" value="1000" step="100">
+
+        <label for="speed">Batch size: <span id="speed-value">10</span></label>
+        <input type="range" id="speed" min="1" max="100" value="10" step="1">
+
+        <button id="start">Start</button>
+
+        <p>Iteration: <span id="iteration-display">-</span></p>
+        <p>Best MSE: <span id="mse-display">-</span></p>
+        <p>Temperature: <span id="temp-display">-</span></p>
+    </div>
+    <div class="canvases">
+        <div class="canvas-tile">
+            <div>Polygon Approximation</div>
+            <canvas id="polygon-canvas" width="320" height="480"></canvas>
+        </div>
+        <div class="canvas-tile">
+            <div>Fitness (MSE)</div>
+            <canvas id="score-canvas" width="480" height="480"></canvas>
+        </div>
+    </div>
+</div>
+</body>
+</html>
