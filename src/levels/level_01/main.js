@@ -43,7 +43,7 @@ function step(config, x, bestGuess, scores) {
 
     // update scores and best guess
     let possibleScore = config.objective(candidate);
-    if (config.strategy.acceptor(bestGuess, possibleScore)) {
+    if (config.strategy.acceptor(config.objective(bestGuess), possibleScore)) {
         scores.push(possibleScore);
         bestGuess = candidate;
     } else {
