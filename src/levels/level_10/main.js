@@ -1,10 +1,9 @@
-import { createRandomSolution, mutateSolution } from './polygon.js';
+import { createRandomSolution, mutateSolution, undoMutation } from './polygon.js';
 import { computeMSE } from './fitness.js';
-import { geometricCooling, annealingAcceptor } from './annealing.js';
+import { geometricCooling, computeBeta, annealingAcceptor } from './annealing.js';
 
 const FITNESS_WIDTH = 64;
 const FITNESS_HEIGHT = 96;
-const BETA = 0.99999;
 
 let running = false;
 
@@ -45,19 +44,22 @@ function toggleRun() {
     const solution = createRandomSolution(numPolygons, FITNESS_WIDTH, FITNESS_HEIGHT);
     const fitnessCanvas = new OffscreenCanvas(FITNESS_WIDTH, FITNESS_HEIGHT);
     const currentMSE = evaluateSolution(solution, fitnessCanvas, targetPixels);
+    const beta = computeBeta(initialTemp, numIterations);
 
     const state = {
       solution,
       currentMSE,
-      bestSolution: solution,
       bestMSE: currentMSE,
       iteration: 0,
       numIterations,
       initialTemp,
+      beta,
       batchSize,
       targetPixels,
       fitnessCanvas,
+      // Store downsampled scores for plotting (avoid storing 500k points)
       scores: [currentMSE],
+      plotInterval: Math.max(1, Math.floor(numIterations / 1000)),
     };
 
     renderPolygons(document.getElementById('polygon-canvas'), state.solution, FITNESS_WIDTH, FITNESS_HEIGHT);
@@ -103,30 +105,38 @@ function drawPolygons(ctx, solution) {
 function runBatch(state) {
   if (!running) return;
 
-  const { batchSize, initialTemp, numIterations, targetPixels, fitnessCanvas } = state;
+  const { batchSize, initialTemp, numIterations, targetPixels, fitnessCanvas, plotInterval } = state;
 
   for (let b = 0; b < batchSize; b++) {
     if (state.iteration >= numIterations) break;
 
-    const temperature = geometricCooling(initialTemp, state.iteration, BETA);
-    const candidate = mutateSolution(state.solution, temperature, FITNESS_WIDTH, FITNESS_HEIGHT);
-    const candidateMSE = evaluateSolution(candidate, fitnessCanvas, targetPixels);
+    const temperature = geometricCooling(initialTemp, state.iteration, state.beta);
+
+    // Mutate in-place, get undo info
+    const undo = mutateSolution(state.solution, FITNESS_WIDTH, FITNESS_HEIGHT);
+    const candidateMSE = evaluateSolution(state.solution, fitnessCanvas, targetPixels);
 
     if (annealingAcceptor(state.currentMSE, candidateMSE, temperature)) {
-      state.solution = candidate;
+      // Accept: keep the mutation
       state.currentMSE = candidateMSE;
       if (candidateMSE < state.bestMSE) {
-        state.bestSolution = candidate;
         state.bestMSE = candidateMSE;
       }
+    } else {
+      // Reject: undo the mutation
+      undoMutation(state.solution, undo);
     }
 
-    state.scores.push(state.bestMSE);
     state.iteration++;
+
+    // Only store score points at intervals to avoid memory issues
+    if (state.iteration % plotInterval === 0) {
+      state.scores.push(state.bestMSE);
+    }
   }
 
-  renderPolygons(document.getElementById('polygon-canvas'), state.bestSolution, FITNESS_WIDTH, FITNESS_HEIGHT);
-  renderScorePlot(document.getElementById('score-canvas'), state.scores, state.numIterations);
+  renderPolygons(document.getElementById('polygon-canvas'), state.solution, FITNESS_WIDTH, FITNESS_HEIGHT);
+  renderScorePlot(document.getElementById('score-canvas'), state.scores);
   updateStats(state);
 
   if (state.iteration < numIterations) {
@@ -157,14 +167,17 @@ function renderPolygons(canvas, solution, solutionWidth, solutionHeight) {
   }
 }
 
-function renderScorePlot(canvas, scores, numIterations) {
+function renderScorePlot(canvas, scores) {
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   if (scores.length < 2) return;
 
   const maxMSE = scores[0];
-  const minMSE = Math.min(...scores);
+  let minMSE = maxMSE;
+  for (let i = 1; i < scores.length; i++) {
+    if (scores[i] < minMSE) minMSE = scores[i];
+  }
   const yRange = maxMSE - minMSE || 1;
 
   ctx.beginPath();
@@ -172,7 +185,7 @@ function renderScorePlot(canvas, scores, numIterations) {
   ctx.lineWidth = 2;
 
   for (let i = 0; i < scores.length; i++) {
-    const x = (i / numIterations) * canvas.width;
+    const x = (i / (scores.length - 1)) * canvas.width;
     const y = canvas.height - ((scores[i] - minMSE) / yRange) * (canvas.height * 0.9) - canvas.height * 0.05;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
@@ -181,12 +194,12 @@ function renderScorePlot(canvas, scores, numIterations) {
 
   ctx.fillStyle = '#333';
   ctx.font = '12px Calibri, sans-serif';
-  ctx.fillText(`MSE: ${Math.round(minMSE)}`, 5, 15);
-  ctx.fillText(`Max: ${Math.round(maxMSE)}`, 5, 30);
+  ctx.fillText(`Best MSE: ${Math.round(minMSE)}`, 5, 15);
+  ctx.fillText(`Initial: ${Math.round(maxMSE)}`, 5, 30);
 }
 
 function updateStats(state) {
-  const temperature = geometricCooling(state.initialTemp, state.iteration, BETA);
+  const temperature = geometricCooling(state.initialTemp, state.iteration, state.beta);
   document.getElementById('iteration-display').textContent = `${state.iteration} / ${state.numIterations}`;
   document.getElementById('mse-display').textContent = Math.round(state.bestMSE);
   document.getElementById('temp-display').textContent = temperature.toFixed(2);

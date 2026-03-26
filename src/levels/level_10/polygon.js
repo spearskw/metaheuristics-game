@@ -6,6 +6,13 @@ function randFloat(min, max) {
   return Math.random() * (max - min) + min;
 }
 
+function clonePolygon(poly) {
+  return {
+    vertices: poly.vertices.map((v) => ({ x: v.x, y: v.y })),
+    color: { ...poly.color },
+  };
+}
+
 export function createRandomPolygon(width, height) {
   return {
     vertices: [
@@ -31,33 +38,69 @@ export function createRandomSolution(numPolygons, width, height) {
 }
 
 export function cloneSolution(solution) {
-  return solution.map((poly) => ({
-    vertices: poly.vertices.map((v) => ({ x: v.x, y: v.y })),
-    color: { ...poly.color },
-  }));
+  return solution.map(clonePolygon);
 }
 
-export function mutateSolution(solution, temperature, width, height) {
-  const clone = cloneSolution(solution);
-  const polyIndex = randInt(0, clone.length - 1);
-  const poly = clone[polyIndex];
+// Mutate in-place and return info needed to undo.
+// Perturbation-based mutations: small random changes converge faster than full random.
+// Three mutation types:
+//   1. Change color: perturb one RGBA channel by a small random delta
+//   2. Move vertex: perturb one vertex position by a small random offset
+//   3. Change drawing index: swap two polygons in the render order
+export function mutateSolution(solution, width, height) {
+  const mutationType = randInt(0, 2);
+  const polyIndex = randInt(0, solution.length - 1);
 
-  if (Math.random() < 0.5) {
+  if (mutationType === 0) {
+    // Perturb color: change one channel by a small delta
+    const poly = solution[polyIndex];
+    const oldColor = { ...poly.color };
     const channel = randInt(0, 3);
     if (channel < 3) {
       const channels = ['r', 'g', 'b'];
-      const delta = Math.round((Math.random() * 2 - 1) * Math.min(temperature, 255));
+      const delta = Math.round((Math.random() * 2 - 1) * 40);
       poly.color[channels[channel]] = Math.max(0, Math.min(255, poly.color[channels[channel]] + delta));
     } else {
-      const delta = (Math.random() * 2 - 1) * Math.min(temperature / 255, 0.5);
-      poly.color.a = Math.max(0.05, Math.min(0.9, poly.color.a + delta));
+      const delta = (Math.random() * 2 - 1) * 0.2;
+      poly.color.a = Math.max(0.01, Math.min(1.0, poly.color.a + delta));
     }
-  } else {
+    return { type: 'color', polyIndex, oldColor };
+  } else if (mutationType === 1) {
+    // Perturb vertex: move by small offset relative to canvas size
+    const poly = solution[polyIndex];
     const vertIndex = randInt(0, poly.vertices.length - 1);
-    const scale = Math.min(temperature / 10, Math.max(width, height));
-    poly.vertices[vertIndex].x = Math.max(0, Math.min(width, poly.vertices[vertIndex].x + (Math.random() * 2 - 1) * scale));
-    poly.vertices[vertIndex].y = Math.max(0, Math.min(height, poly.vertices[vertIndex].y + (Math.random() * 2 - 1) * scale));
+    const oldVertex = { ...poly.vertices[vertIndex] };
+    const dx = (Math.random() * 2 - 1) * width * 0.2;
+    const dy = (Math.random() * 2 - 1) * height * 0.2;
+    poly.vertices[vertIndex].x = Math.max(0, Math.min(width, poly.vertices[vertIndex].x + dx));
+    poly.vertices[vertIndex].y = Math.max(0, Math.min(height, poly.vertices[vertIndex].y + dy));
+    return { type: 'vertex', polyIndex, vertIndex, oldVertex };
+  } else {
+    // Change drawing index (move polygon to new position in array)
+    const newIndex = randInt(0, solution.length - 1);
+    if (newIndex === polyIndex) {
+      return { type: 'noop' };
+    }
+    const [poly] = solution.splice(polyIndex, 1);
+    solution.splice(newIndex, 0, poly);
+    return { type: 'order', fromIndex: polyIndex, toIndex: newIndex };
   }
+}
 
-  return clone;
+// Undo a mutation in-place
+export function undoMutation(solution, undo) {
+  if (undo.type === 'color') {
+    const poly = solution[undo.polyIndex];
+    poly.color.r = undo.oldColor.r;
+    poly.color.g = undo.oldColor.g;
+    poly.color.b = undo.oldColor.b;
+    poly.color.a = undo.oldColor.a;
+  } else if (undo.type === 'vertex') {
+    const poly = solution[undo.polyIndex];
+    poly.vertices[undo.vertIndex].x = undo.oldVertex.x;
+    poly.vertices[undo.vertIndex].y = undo.oldVertex.y;
+  } else if (undo.type === 'order') {
+    const [poly] = solution.splice(undo.toIndex, 1);
+    solution.splice(undo.fromIndex, 0, poly);
+  }
 }

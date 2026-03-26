@@ -30,8 +30,8 @@ test.describe('Level 10 - Mona Lisa Polygons', () => {
 
   test('optimization runs and MSE decreases', async ({ page }) => {
     await page.locator('#polygons').fill('20');
-    await page.locator('#iterations').fill('500');
-    await page.locator('#speed').fill('50');
+    await page.locator('#iterations').fill('1000');
+    await page.locator('#speed').fill('100');
 
     await page.locator('#start').click();
 
@@ -74,8 +74,8 @@ test.describe('Level 10 - Mona Lisa Polygons', () => {
 
   test('polygon canvas is not blank after optimization starts', async ({ page }) => {
     await page.locator('#polygons').fill('20');
-    await page.locator('#iterations').fill('500');
-    await page.locator('#speed').fill('50');
+    await page.locator('#iterations').fill('1000');
+    await page.locator('#speed').fill('100');
 
     // Take a screenshot of canvas before
     const canvasBefore = await page.locator('#polygon-canvas').screenshot();

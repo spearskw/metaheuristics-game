@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createRandomPolygon, createRandomSolution, cloneSolution, mutateSolution } from '../../src/levels/level_10/polygon.js';
+import { createRandomPolygon, createRandomSolution, cloneSolution, mutateSolution, undoMutation } from '../../src/levels/level_10/polygon.js';
 
 describe('createRandomPolygon', () => {
   it('returns a polygon with 3 vertices and RGBA color', () => {
@@ -42,27 +42,32 @@ describe('cloneSolution', () => {
 });
 
 describe('mutateSolution', () => {
-  it('returns a new solution that differs from the original', () => {
-    const original = createRandomSolution(50, 64, 96);
-    const mutated = mutateSolution(original, 100, 64, 96);
-    expect(mutated).toHaveLength(50);
-    const changed = mutated.some((poly, i) => {
-      const orig = original[i];
-      return (
-        poly.color.r !== orig.color.r ||
-        poly.color.g !== orig.color.g ||
-        poly.color.b !== orig.color.b ||
-        poly.color.a !== orig.color.a ||
-        poly.vertices.some((v, j) => v.x !== orig.vertices[j].x || v.y !== orig.vertices[j].y)
-      );
-    });
-    expect(changed).toBe(true);
+  it('mutates the solution in-place and returns undo info', () => {
+    const solution = createRandomSolution(50, 64, 96);
+    const snapshot = JSON.stringify(solution);
+    const undo = mutateSolution(solution, 64, 96);
+    expect(undo).toHaveProperty('type');
+    expect(['color', 'vertex', 'order', 'noop']).toContain(undo.type);
+    // Solution should be mutated (unless noop)
+    if (undo.type !== 'noop') {
+      expect(JSON.stringify(solution)).not.toBe(snapshot);
+    }
   });
 
-  it('does not mutate the input solution', () => {
-    const original = createRandomSolution(10, 64, 96);
-    const snapshot = JSON.stringify(original);
-    mutateSolution(original, 100, 64, 96);
-    expect(JSON.stringify(original)).toBe(snapshot);
+  it('can be undone to restore original state', () => {
+    // Run many times to cover all mutation types
+    for (let trial = 0; trial < 50; trial++) {
+      const solution = createRandomSolution(10, 64, 96);
+      const snapshot = JSON.stringify(solution);
+      const undo = mutateSolution(solution, 64, 96);
+      undoMutation(solution, undo);
+      expect(JSON.stringify(solution)).toBe(snapshot);
+    }
+  });
+
+  it('preserves solution length', () => {
+    const solution = createRandomSolution(50, 64, 96);
+    mutateSolution(solution, 64, 96);
+    expect(solution).toHaveLength(50);
   });
 });

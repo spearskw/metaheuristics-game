@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { geometricCooling, annealingAcceptor } from '../../src/levels/level_10/annealing.js';
+import { geometricCooling, computeBeta, annealingAcceptor } from '../../src/levels/level_10/annealing.js';
 
 describe('geometricCooling', () => {
   it('returns initialTemp on iteration 0', () => {
@@ -17,6 +17,20 @@ describe('geometricCooling', () => {
   it('temperature is always positive', () => {
     const t = geometricCooling(1000, 1000000, 0.99999);
     expect(t).toBeGreaterThan(0);
+  });
+});
+
+describe('computeBeta', () => {
+  it('produces a beta that cools to near-zero by numIterations', () => {
+    const beta = computeBeta(1000, 200000);
+    const finalTemp = geometricCooling(1000, 200000, beta);
+    expect(finalTemp).toBeCloseTo(0.01, 1);
+  });
+
+  it('produces a beta between 0 and 1', () => {
+    const beta = computeBeta(500, 100000);
+    expect(beta).toBeGreaterThan(0);
+    expect(beta).toBeLessThan(1);
   });
 });
 
