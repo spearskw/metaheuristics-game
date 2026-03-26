@@ -1,13 +1,13 @@
-import {clear, plotCandidate, plotObjective, plotScore, setupCanvas} from "../../plotting/plotting.js";
 import {always_accept_if_better} from "../../strategies/acceptor/always_if_better.js";
-import {smooth_valley} from "../../objectives/smooth_valley.js";
 import {hillClimb} from "../../strategies/forager/hill-climb.js";
+import {clear, plotCandidate, plotObjective, plotScore, setupCanvas} from "../../plotting/plotting.js";
+import {bumpy_valley} from "../../objectives/bumpy_valley.js";
 
-window.onload = main
+window.onload = main;
 
 function main() {
     let config = {
-        objective: smooth_valley,
+        objective: bumpy_valley,
         initialGuess: 9,
         numSteps: 20,
         millisBetweenFrames: 200,
@@ -34,7 +34,7 @@ function main() {
 
     const nextLevelButton = document.getElementById("nextLevelButton");
     nextLevelButton.addEventListener("click", () => {
-        window.location.href = "../level_02/index.html"
+        window.location.href = "../level_03/index.html"
     })
 
     const tryAgainButton = document.getElementById("tryAgainButton");
@@ -46,6 +46,7 @@ function main() {
         document.getElementById("startButton").disabled = false;
         document.getElementById("strategy").disabled = false;
         document.getElementById("stepSize").disabled = false;
+        ;
     })
 }
 
