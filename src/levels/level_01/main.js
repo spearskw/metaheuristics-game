@@ -1,17 +1,20 @@
-import * as strategies from "./strategies.js";
-import * as objectives from "./objectives.js";
-import {clear, plotCandidate, plotObjective, plotScore, setupCanvas} from "./plotting.js";
+import {clear, plotCandidate, plotObjective, plotScore, setupCanvas} from "../../plotting/plotting.js";
+import {make_random_guess} from "../../strategies/forager/random.js";
+import {always_accept_if_better} from "../../strategies/acceptor/always_if_better.js";
+import {smooth_valley} from "../../objectives/smooth_valley.js";
 
 window.onload = main
 
 function main() {
     let config = {
-        objective: objectives.deceptive,
+        objective: smooth_valley,
         initialGuess: 7,
         numSteps: 100,
         millisBetweenFrames: 100,
-        strategy: (val, progress) => strategies.anneal(val, 2.5, 0.1, progress)
-        // strategy: (val, progress) => strategies.nearby(val, 0.4)
+        strategy: {
+            forager: make_random_guess,
+            acceptor: always_accept_if_better
+        }
     }
 
     optimize(config)
@@ -32,14 +35,15 @@ function optimize(config) {
 }
 
 function step(config, x, bestGuess, scores) {
-    let candidate = config.strategy(bestGuess, scores.length / config.numSteps);
+    let candidate = config.strategy.forager()
+    // let candidate = config.strategy(bestGuess, scores.length / config.numSteps);
 
     // clamp so that we can always see it
     candidate = Math.max(Math.min(candidate, 10), -10)
 
     // update scores and best guess
     let possibleScore = config.objective(candidate);
-    if (possibleScore < scores[scores.length - 1]) {
+    if (config.strategy.acceptor(bestGuess, possibleScore)) {
         scores.push(possibleScore);
         bestGuess = candidate;
     } else {
