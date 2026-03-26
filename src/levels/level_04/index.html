@@ -1,0 +1,36 @@
+<html>
+<head>
+    <script src="main.js" type="module"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<h1>Annealing</h1>
+<div class="layout">
+    <div class="controls">
+        <label for="objective">Objective:</label>
+        <select id="objective-fn">
+            <option value="smooth_valley" selected>Smooth Valley</option>
+            <option value="bumpy_valley">Bumpy Valley</option>
+            <option value="deceptive">Deceptive</option>
+            <option value="needle_in_haystack">Needle In Haystack</option>
+        </select>
+        <label for="initial">Initial: <span id="initial-value">7</span></label>
+        <input type="range" id="initial" min="-10" max="10" value="7" step="0.1">
+        <label for="iterations">Iterations: <span id="iterations-value">100</span></label>
+        <input type="range" id="iterations" min="1" max="2000" value="100" step="1">
+        <label for="temperature">Temperature: <span id="temperature-value">20</span></label>
+        <input type="range" id="temperature" min="1" max="50" value="20" step="1">
+        <label for="speed">Speed: <span id="speed-value">100</span>ms</label>
+        <input type="range" id="speed" min="5" max="2000" value="100" step="5">
+        <button id="start">Start</button>
+        <p>Best: <span id="best-value">-</span></p>
+        <p>Current: <span id="current-value">-</span></p>
+        <p>Iteration: <span id="iteration-value">-</span></p>
+    </div>
+    <div class="canvases">
+        <canvas id="objective"></canvas>
+        <canvas id="score"></canvas>
+    </div>
+</div>
+</body>
+</html>
