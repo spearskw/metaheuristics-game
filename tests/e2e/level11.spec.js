@@ -111,6 +111,25 @@ test.describe('Level 11 - Vehicle Routing', () => {
     expect(canvasBefore.equals(canvasAfter)).toBe(false);
   });
 
+  test('score canvas changes during optimization', async ({ page }) => {
+    await page.locator('#iterations').fill('500000');
+    await page.locator('#speed').fill('500');
+
+    // Screenshot score canvas before starting
+    const scoreBefore = await page.locator('#score-canvas').screenshot();
+
+    await page.locator('#start').click();
+
+    // Wait for some progress to render
+    await page.waitForTimeout(2000);
+
+    // Take screenshot after — graph should have been drawn
+    const scoreAfter = await page.locator('#score-canvas').screenshot();
+
+    // The score canvas should have changed (lines being drawn)
+    expect(scoreBefore.equals(scoreAfter)).toBe(false);
+  });
+
   test('penalty displays are visible after optimization', async ({ page }) => {
     await page.locator('#iterations').fill('10000');
     await page.locator('#speed').fill('5000');

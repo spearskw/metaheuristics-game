@@ -58,7 +58,7 @@ async function toggleRun() {
     routes,
     instance,
     dist,
-    currentTotal: currentCost.total,
+    currentCost: { ...currentCost },
     bestCost: { ...currentCost },
     bestRoutes: deepCopyRoutes(routes),
     iteration: 0,
@@ -66,7 +66,7 @@ async function toggleRun() {
     initialTemp,
     coolingFn,
     batchSize,
-    // Track 3 metrics over time for the score plot
+    // Track CURRENT solution metrics over time (not best — so graph is dynamic)
     distanceHistory: [currentCost.distance],
     capacityHistory: [currentCost.capacityPenalty],
     twHistory: [currentCost.twPenalty],
@@ -96,17 +96,17 @@ function runBatch(state) {
     if (undo.type === 'noop') {
       state.iteration++;
       if (state.iteration % plotInterval === 0) {
-        state.distanceHistory.push(state.bestCost.distance);
-        state.capacityHistory.push(state.bestCost.capacityPenalty);
-        state.twHistory.push(state.bestCost.twPenalty);
+        state.distanceHistory.push(state.currentCost.distance);
+        state.capacityHistory.push(state.currentCost.capacityPenalty);
+        state.twHistory.push(state.currentCost.twPenalty);
       }
       continue;
     }
 
     const candidateCost = totalCost(state.routes, instance, dist);
 
-    if (annealingAcceptor(state.currentTotal, candidateCost.total, temperature)) {
-      state.currentTotal = candidateCost.total;
+    if (annealingAcceptor(state.currentCost.total, candidateCost.total, temperature)) {
+      state.currentCost = { ...candidateCost };
       if (candidateCost.total < state.bestCost.total) {
         state.bestCost = { ...candidateCost };
         state.bestRoutes = deepCopyRoutes(state.routes);
@@ -118,9 +118,9 @@ function runBatch(state) {
     state.iteration++;
 
     if (state.iteration % plotInterval === 0) {
-      state.distanceHistory.push(state.bestCost.distance);
-      state.capacityHistory.push(state.bestCost.capacityPenalty);
-      state.twHistory.push(state.bestCost.twPenalty);
+      state.distanceHistory.push(state.currentCost.distance);
+      state.capacityHistory.push(state.currentCost.capacityPenalty);
+      state.twHistory.push(state.currentCost.twPenalty);
     }
   }
 
@@ -177,7 +177,6 @@ function renderRoutes(canvas, routes, instance) {
     ctx.stroke();
   }
 
-  // Customer dots
   for (let i = 1; i < customers.length; i++) {
     const c = customers[i];
     ctx.fillStyle = '#333';
@@ -186,7 +185,6 @@ function renderRoutes(canvas, routes, instance) {
     ctx.fill();
   }
 
-  // Depot
   const depot = customers[0];
   ctx.fillStyle = '#000';
   ctx.fillRect(toCanvasX(depot.x) - 6, toCanvasY(depot.y) - 6, 12, 12);
@@ -210,7 +208,7 @@ function renderScorePlot(canvas, state) {
   }
   if (maxY === 0) maxY = 1;
 
-  const plotTop = 45;
+  const plotTop = 55;
   const plotH = H - plotTop - 10;
 
   function drawLine(data, color) {
@@ -226,31 +224,29 @@ function renderScorePlot(canvas, state) {
     ctx.stroke();
   }
 
-  // Draw lines: distance (blue), capacity penalty (red), TW penalty (orange)
   drawLine(distanceHistory, '#4363d8');
   drawLine(capacityHistory, '#c0392b');
   drawLine(twHistory, '#e67e22');
 
-  // Legend with latest values
-  const lastIdx = distanceHistory.length - 1;
+  // Legend with current and best values
   ctx.font = '12px Calibri, sans-serif';
 
   ctx.fillStyle = '#4363d8';
-  ctx.fillText(`Distance: ${distanceHistory[lastIdx].toFixed(1)}`, 5, 14);
+  ctx.fillText(`Distance: ${state.currentCost.distance.toFixed(1)}  (best: ${state.bestCost.distance.toFixed(1)})`, 5, 14);
 
   ctx.fillStyle = '#c0392b';
-  ctx.fillText(`Capacity (hard): ${capacityHistory[lastIdx].toFixed(1)}`, 5, 28);
+  ctx.fillText(`Capacity (hard): ${state.currentCost.capacityPenalty.toFixed(1)}`, 5, 28);
 
   ctx.fillStyle = '#e67e22';
-  ctx.fillText(`TW (soft): ${twHistory[lastIdx].toFixed(1)}`, 5, 42);
+  ctx.fillText(`Time Windows (soft): ${state.currentCost.twPenalty.toFixed(1)}`, 5, 42);
 }
 
 function updateStats(state) {
   const temperature = state.coolingFn(state.initialTemp, state.iteration, state.numIterations);
   document.getElementById('iteration-display').textContent = `${state.iteration} / ${state.numIterations}`;
   document.getElementById('distance-display').textContent = state.bestCost.distance.toFixed(2);
-  document.getElementById('capacity-penalty-display').textContent = state.bestCost.capacityPenalty.toFixed(2);
-  document.getElementById('tw-penalty-display').textContent = state.bestCost.twPenalty.toFixed(2);
+  document.getElementById('capacity-penalty-display').textContent = state.currentCost.capacityPenalty.toFixed(2);
+  document.getElementById('tw-penalty-display').textContent = state.currentCost.twPenalty.toFixed(2);
   document.getElementById('routes-display').textContent = state.bestRoutes.length;
   document.getElementById('temp-display').textContent = temperature.toFixed(2);
 }

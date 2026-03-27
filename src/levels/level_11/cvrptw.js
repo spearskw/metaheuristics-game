@@ -157,8 +157,8 @@ export function isRouteFeasible(route, instance, dist) {
 
 // Penalty weights — tuned so penalties are comparable in magnitude to distance
 // but large enough to push SA toward feasibility.
-export const CAPACITY_PENALTY_WEIGHT = 50;  // per unit of excess demand
-export const TW_PENALTY_WEIGHT = 1;         // per unit of time late
+export const CAPACITY_PENALTY_WEIGHT = 2;   // per unit of excess demand (hard)
+export const TW_PENALTY_WEIGHT = 0.5;       // per unit of time late (soft)
 
 /**
  * Compute penalties for a single route.
