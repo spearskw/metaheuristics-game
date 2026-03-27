@@ -9,6 +9,14 @@
 <h1>Paintings from Polygons</h1>
 <div class="layout">
     <div class="controls">
+        <label for="cooling-schedule">Cooling Schedule:</label>
+        <select id="cooling-schedule">
+            <option value="geometric" selected>Geometric</option>
+            <option value="linear">Linear</option>
+            <option value="linearReheat">Linear Reheat</option>
+            <option value="cosine">Cosine</option>
+        </select>
+
         <label for="polygons">Polygons: <span id="polygons-value">125</span></label>
         <input type="range" id="polygons" min="10" max="300" value="125" step="5">
 

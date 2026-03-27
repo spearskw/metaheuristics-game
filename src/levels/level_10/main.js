@@ -1,6 +1,6 @@
 import { createRandomSolution, mutateSolution, undoMutation } from './polygon.js';
 import { computeMSE } from './fitness.js';
-import { geometricCooling, computeBeta, annealingAcceptor } from './annealing.js';
+import { coolingSchedules, annealingAcceptor } from './annealing.js';
 
 const FITNESS_WIDTH = 64;
 const FITNESS_HEIGHT = 96;
@@ -39,12 +39,13 @@ function toggleRun() {
   const numIterations = parseInt(document.getElementById('iterations').value);
   const initialTemp = parseInt(document.getElementById('temperature').value);
   const batchSize = parseInt(document.getElementById('speed').value);
+  const scheduleName = document.getElementById('cooling-schedule').value;
+  const coolingFn = coolingSchedules[scheduleName];
 
   loadTargetImage('mona.jpg', (targetPixels) => {
     const solution = createRandomSolution(numPolygons, FITNESS_WIDTH, FITNESS_HEIGHT);
     const fitnessCanvas = new OffscreenCanvas(FITNESS_WIDTH, FITNESS_HEIGHT);
     const currentMSE = evaluateSolution(solution, fitnessCanvas, targetPixels);
-    const beta = computeBeta(initialTemp, numIterations);
 
     const state = {
       solution,
@@ -53,11 +54,10 @@ function toggleRun() {
       iteration: 0,
       numIterations,
       initialTemp,
-      beta,
+      coolingFn,
       batchSize,
       targetPixels,
       fitnessCanvas,
-      // Store downsampled scores for plotting (avoid storing 500k points)
       scores: [currentMSE],
       plotInterval: Math.max(1, Math.floor(numIterations / 1000)),
     };
@@ -105,31 +105,27 @@ function drawPolygons(ctx, solution) {
 function runBatch(state) {
   if (!running) return;
 
-  const { batchSize, initialTemp, numIterations, targetPixels, fitnessCanvas, plotInterval } = state;
+  const { batchSize, initialTemp, numIterations, targetPixels, fitnessCanvas, coolingFn, plotInterval } = state;
 
   for (let b = 0; b < batchSize; b++) {
     if (state.iteration >= numIterations) break;
 
-    const temperature = geometricCooling(initialTemp, state.iteration, state.beta);
+    const temperature = coolingFn(initialTemp, state.iteration, numIterations);
 
-    // Mutate in-place, get undo info
     const undo = mutateSolution(state.solution, FITNESS_WIDTH, FITNESS_HEIGHT);
     const candidateMSE = evaluateSolution(state.solution, fitnessCanvas, targetPixels);
 
     if (annealingAcceptor(state.currentMSE, candidateMSE, temperature)) {
-      // Accept: keep the mutation
       state.currentMSE = candidateMSE;
       if (candidateMSE < state.bestMSE) {
         state.bestMSE = candidateMSE;
       }
     } else {
-      // Reject: undo the mutation
       undoMutation(state.solution, undo);
     }
 
     state.iteration++;
 
-    // Only store score points at intervals to avoid memory issues
     if (state.iteration % plotInterval === 0) {
       state.scores.push(state.bestMSE);
     }
@@ -199,7 +195,7 @@ function renderScorePlot(canvas, scores) {
 }
 
 function updateStats(state) {
-  const temperature = geometricCooling(state.initialTemp, state.iteration, state.beta);
+  const temperature = state.coolingFn(state.initialTemp, state.iteration, state.numIterations);
   document.getElementById('iteration-display').textContent = `${state.iteration} / ${state.numIterations}`;
   document.getElementById('mse-display').textContent = Math.round(state.bestMSE);
   document.getElementById('temp-display').textContent = temperature.toFixed(2);
