@@ -27,8 +27,8 @@
         <label for="iterations">Iterations: <span id="iterations-value">200000</span></label>
         <input type="range" id="iterations" min="10000" max="1000000" value="200000" step="10000">
 
-        <label for="temperature">Initial Temp: <span id="temperature-value">100</span></label>
-        <input type="range" id="temperature" min="1" max="500" value="100" step="1">
+        <label for="temperature">Initial Temp: <span id="temperature-value">50</span></label>
+        <input type="range" id="temperature" min="1" max="500" value="50" step="1">
 
         <label for="speed">Batch size: <span id="speed-value">500</span></label>
         <input type="range" id="speed" min="10" max="5000" value="500" step="10">
@@ -37,8 +37,6 @@
 
         <p>Iteration: <span id="iteration-display">-</span></p>
         <p>Best Distance: <span id="distance-display">-</span></p>
-        <p style="color: #c0392b">Capacity Penalty: <span id="capacity-penalty-display">-</span></p>
-        <p style="color: #e67e22">TW Penalty: <span id="tw-penalty-display">-</span></p>
         <p>Routes: <span id="routes-display">-</span></p>
         <p>Temperature: <span id="temp-display">-</span></p>
     </div>
@@ -48,7 +46,7 @@
             <canvas id="route-canvas" width="500" height="500"></canvas>
         </div>
         <div class="canvas-tile">
-            <div>Current Solution Cost</div>
+            <div>Score (Total Distance)</div>
             <canvas id="score-canvas" width="480" height="480"></canvas>
         </div>
     </div>

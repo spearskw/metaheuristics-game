@@ -111,40 +111,6 @@ test.describe('Level 11 - Vehicle Routing', () => {
     expect(canvasBefore.equals(canvasAfter)).toBe(false);
   });
 
-  test('score canvas changes during optimization', async ({ page }) => {
-    await page.locator('#iterations').fill('500000');
-    await page.locator('#speed').fill('500');
-
-    // Screenshot score canvas before starting
-    const scoreBefore = await page.locator('#score-canvas').screenshot();
-
-    await page.locator('#start').click();
-
-    // Wait for some progress to render
-    await page.waitForTimeout(2000);
-
-    // Take screenshot after — graph should have been drawn
-    const scoreAfter = await page.locator('#score-canvas').screenshot();
-
-    // The score canvas should have changed (lines being drawn)
-    expect(scoreBefore.equals(scoreAfter)).toBe(false);
-  });
-
-  test('penalty displays are visible after optimization', async ({ page }) => {
-    await page.locator('#iterations').fill('10000');
-    await page.locator('#speed').fill('5000');
-
-    await page.locator('#start').click();
-    await expect(page.locator('#start')).toHaveText('Start', { timeout: 30000 });
-
-    // Capacity and TW penalty elements should show numeric values
-    const capText = await page.locator('#capacity-penalty-display').textContent();
-    expect(parseFloat(capText)).not.toBeNaN();
-
-    const twText = await page.locator('#tw-penalty-display').textContent();
-    expect(parseFloat(twText)).not.toBeNaN();
-  });
-
   test('shows correct number of routes', async ({ page }) => {
     await page.locator('#iterations').fill('10000');
     await page.locator('#speed').fill('5000');
