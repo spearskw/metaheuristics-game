@@ -1,6 +1,7 @@
 import { parseInstance, computeDistanceMatrix, totalDistance, buildGreedySolution } from './cvrptw.js';
 import { mutateSolution, undoMutation } from './mutations.js';
 import { coolingSchedules, annealingAcceptor } from '../level_10/annealing.js';
+import { filterInstances } from './instances.js';
 
 const ROUTE_COLORS = [
   '#e6194b', '#3cb44b', '#4363d8', '#f58231', '#911eb4',
@@ -16,7 +17,79 @@ window.onload = main;
 
 function main() {
   bindSliders();
+  bindFilters();
+  populateInstanceDropdown();
   document.getElementById('start').addEventListener('click', toggleRun);
+  document.getElementById('instance').addEventListener('change', onInstanceChange);
+  onInstanceChange();
+}
+
+function getFilterValues() {
+  const sizeVal = document.getElementById('filter-size').value;
+  const geoVal = document.getElementById('filter-geo').value;
+  const routeVal = document.getElementById('filter-route').value;
+  const twVal = document.getElementById('filter-tw').value;
+  return {
+    size: sizeVal ? parseInt(sizeVal) : null,
+    geoType: geoVal || null,
+    routeLength: routeVal || null,
+    twDensity: twVal ? parseInt(twVal) : null,
+  };
+}
+
+function populateInstanceDropdown() {
+  const select = document.getElementById('instance');
+  const filters = getFilterValues();
+  const instances = filterInstances(filters);
+  const prevValue = select.value;
+
+  select.innerHTML = '';
+  for (const inst of instances) {
+    const opt = document.createElement('option');
+    opt.value = inst.path;
+    opt.textContent = inst.name;
+    select.appendChild(opt);
+  }
+
+  // Try to keep the previous selection if it still exists
+  if ([...select.options].some(o => o.value === prevValue)) {
+    select.value = prevValue;
+  }
+
+  // Trigger instance change to preview the newly selected instance
+  onInstanceChange();
+}
+
+function bindFilters() {
+  for (const id of ['filter-size', 'filter-geo', 'filter-route', 'filter-tw']) {
+    document.getElementById(id).addEventListener('change', populateInstanceDropdown);
+  }
+}
+
+async function onInstanceChange() {
+  // Stop any running optimization
+  if (running) {
+    running = false;
+    document.getElementById('start').textContent = 'Start';
+  }
+
+  // Clear score canvas
+  const scoreCanvas = document.getElementById('score-canvas');
+  scoreCanvas.getContext('2d').clearRect(0, 0, scoreCanvas.width, scoreCanvas.height);
+
+  // Reset stats
+  document.getElementById('iteration-display').textContent = '-';
+  document.getElementById('distance-display').textContent = '-';
+  document.getElementById('routes-display').textContent = '-';
+  document.getElementById('temp-display').textContent = '-';
+
+  // Fetch and render the new instance's stops
+  const instanceFile = document.getElementById('instance').value;
+  if (!instanceFile) return;
+  const response = await fetch(instanceFile);
+  const text = await response.text();
+  const instance = parseInstance(text);
+  renderStops(document.getElementById('route-canvas'), instance);
 }
 
 function bindSliders() {
@@ -128,13 +201,7 @@ function runBatch(state) {
   }
 }
 
-function renderRoutes(canvas, routes, instance) {
-  const ctx = canvas.getContext('2d');
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const customers = instance.customers;
-
-  // Compute coordinate bounds with padding
+function getCanvasTransform(canvas, customers) {
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   for (const c of customers) {
     if (c.x < minX) minX = c.x;
@@ -142,21 +209,43 @@ function renderRoutes(canvas, routes, instance) {
     if (c.y < minY) minY = c.y;
     if (c.y > maxY) maxY = c.y;
   }
-
   const padding = 20;
   const rangeX = maxX - minX || 1;
   const rangeY = maxY - minY || 1;
   const scaleX = (canvas.width - 2 * padding) / rangeX;
   const scaleY = (canvas.height - 2 * padding) / rangeY;
+  return {
+    toX: (x) => padding + (x - minX) * scaleX,
+    toY: (y) => canvas.height - padding - (y - minY) * scaleY,
+  };
+}
 
-  function toCanvasX(x) {
-    return padding + (x - minX) * scaleX;
+function drawCustomerDots(ctx, customers, t) {
+  for (let i = 1; i < customers.length; i++) {
+    const c = customers[i];
+    ctx.fillStyle = '#333';
+    ctx.beginPath();
+    ctx.arc(t.toX(c.x), t.toY(c.y), 4, 0, Math.PI * 2);
+    ctx.fill();
   }
+  const depot = customers[0];
+  ctx.fillStyle = '#000';
+  ctx.fillRect(t.toX(depot.x) - 6, t.toY(depot.y) - 6, 12, 12);
+}
 
-  function toCanvasY(y) {
-    // Flip Y so up is up
-    return canvas.height - padding - (y - minY) * scaleY;
-  }
+function renderStops(canvas, instance) {
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const t = getCanvasTransform(canvas, instance.customers);
+  drawCustomerDots(ctx, instance.customers, t);
+}
+
+function renderRoutes(canvas, routes, instance) {
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const customers = instance.customers;
+  const t = getCanvasTransform(canvas, customers);
 
   // Draw each route as colored lines
   for (let r = 0; r < routes.length; r++) {
@@ -168,35 +257,19 @@ function renderRoutes(canvas, routes, instance) {
     ctx.lineWidth = 2;
     ctx.beginPath();
 
-    // Depot to first customer
     const depot = customers[0];
-    ctx.moveTo(toCanvasX(depot.x), toCanvasY(depot.y));
+    ctx.moveTo(t.toX(depot.x), t.toY(depot.y));
 
     for (const cid of route) {
       const c = customers[cid];
-      ctx.lineTo(toCanvasX(c.x), toCanvasY(c.y));
+      ctx.lineTo(t.toX(c.x), t.toY(c.y));
     }
 
-    // Last customer back to depot
-    ctx.lineTo(toCanvasX(depot.x), toCanvasY(depot.y));
+    ctx.lineTo(t.toX(depot.x), t.toY(depot.y));
     ctx.stroke();
   }
 
-  // Draw customer dots
-  for (let i = 1; i < customers.length; i++) {
-    const c = customers[i];
-    ctx.fillStyle = '#333';
-    ctx.beginPath();
-    ctx.arc(toCanvasX(c.x), toCanvasY(c.y), 4, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  // Draw depot as larger black square
-  const depot = customers[0];
-  const dx = toCanvasX(depot.x);
-  const dy = toCanvasY(depot.y);
-  ctx.fillStyle = '#000';
-  ctx.fillRect(dx - 6, dy - 6, 12, 12);
+  drawCustomerDots(ctx, customers, t);
 }
 
 function renderScorePlot(canvas, scores) {

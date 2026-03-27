@@ -9,12 +9,40 @@
 <h1>Vehicle Routing with Time Windows</h1>
 <div class="layout">
     <div class="controls">
-        <label for="instance">Instance:</label>
-        <select id="instance">
-            <option value="c101.txt" selected>C101 (100 stops)</option>
-            <option value="c1_4_1.txt">C1_4_1 (400 stops)</option>
-            <option value="c1_10_1.txt">C1_10_1 (1000 stops)</option>
+        <label for="filter-size">Size:</label>
+        <select id="filter-size">
+            <option value="">All</option>
+            <option value="100">100</option>
+            <option value="400">400</option>
+            <option value="1000">1000</option>
         </select>
+
+        <label for="filter-geo">Geography:</label>
+        <select id="filter-geo">
+            <option value="">All</option>
+            <option value="R">Random</option>
+            <option value="C">Clustered</option>
+            <option value="RC">Mixed</option>
+        </select>
+
+        <label for="filter-route">Route length:</label>
+        <select id="filter-route">
+            <option value="">All</option>
+            <option value="short">Short</option>
+            <option value="long">Long</option>
+        </select>
+
+        <label for="filter-tw">Time windows:</label>
+        <select id="filter-tw">
+            <option value="">All</option>
+            <option value="25">25%</option>
+            <option value="50">50%</option>
+            <option value="75">75%</option>
+            <option value="100">100%</option>
+        </select>
+
+        <label for="instance">Instance:</label>
+        <select id="instance"></select>
 
         <label for="cooling-schedule">Cooling Schedule:</label>
         <select id="cooling-schedule">
@@ -47,7 +75,7 @@
         </div>
         <div class="canvas-tile">
             <div>Score (Total Distance)</div>
-            <canvas id="score-canvas" width="480" height="480"></canvas>
+            <canvas id="score-canvas" width="500" height="500"></canvas>
         </div>
     </div>
 </div>
