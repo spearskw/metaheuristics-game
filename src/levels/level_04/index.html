@@ -1,34 +1,83 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <title>Level 4</title>
     <script src="main.js" type="module"></script>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../common/styles.css">
 </head>
 <body>
-<h1>Annealing</h1>
-<div class="layout">
-    <div class="controls">
-        <label for="objective">Objective:</label>
-        <select id="objective-fn">
-            <option value="smooth_valley" selected>Smooth Valley</option>
-            <option value="bumpy_valley">Bumpy Valley</option>
-            <option value="deceptive">Deceptive</option>
-            <option value="needle_in_haystack">Needle In Haystack</option>
-        </select>
-        <label for="initial">Initial: <span id="initial-value">7</span></label>
-        <input type="range" id="initial" min="-10" max="10" value="7" step="0.1">
-        <label for="iterations">Iterations: <span id="iterations-value">100</span></label>
-        <input type="range" id="iterations" min="1" max="2000" value="100" step="1">
-        <label for="temperature">Temperature: <span id="temperature-value">20</span></label>
-        <input type="range" id="temperature" min="1" max="50" value="20" step="1">
-        <label for="speed">Speed: <span id="speed-value">100</span>ms</label>
-        <input type="range" id="speed" min="5" max="2000" value="100" step="5">
-        <button id="start">Start</button>
-        <p>Best: <span id="best-value">-</span></p>
-        <p>Current: <span id="current-value">-</span></p>
-        <p>Iteration: <span id="iteration-value">-</span></p>
+<h1>Level 4</h1>
+<div class="help-overlay" id="strategy-overlay">
+    <div class="help-card">
+        <h3>Strategies</h3>
+        <dl>
+            <dt>Hill Climb</dt>
+            <dd>Takes a random step left or right each turn. Only accepts the new position if it's better. Simple but can get stuck.</dd>
+            <dt>Adaptive</dt>
+            <dd>Starts with big steps to explore broadly, then gradually shrinks them to zero in on the best spot. Only accepts improvements.</dd>
+        </dl>
+        <button id="strategy-ok">OK</button>
     </div>
-    <div class="canvases">
+</div>
+<div class="container">
+    <div class="form-wrapper">
+        <form id="form">
+            <div class="form-field">
+                <label for="strategy">Choose the strategy: </label>
+                <select name="strategy" id="strategy">
+                    <option value="hill-climb">Hill Climb</option>
+                    <option value="adaptive">Adaptive</option>
+                </select>
+                <button type="button" class="help-btn" id="strategy-help">?</button>
+            </div>
+            <div class="form-field">
+                <label for="map">Choose the map: </label>
+                <select name="map" id="map">
+                    <option value="smooth_valley">Smooth Valley</option>
+                    <option value="bumpy_valley">Bumpy Valley</option>
+                    <option value="needle_in_haystack">Needle in Haystack</option>
+                </select>
+            </div>
+            <div class="form-field" id="hill-climb-params">
+                <label for="stepSize">Choose step size: </label>
+                <select name="stepSize" id="stepSize">
+                    <option value="0.1">0.1</option>
+                    <option value="0.5">0.5</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+            <div class="form-field" id="adaptive-params" style="display: none;">
+                <label for="initialStepSize">Initial step size: </label>
+                <select name="initialStepSize" id="initialStepSize">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+            <button type="submit" id="startButton">Start</button>
+        </form>
+        <div id="modal">
+            <p id="modal-result"></p>
+            <button id="tryAgainButton">Try again</button>
+            <button id="nextLevelButton">Next level</button>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="canvas-tile">
+        <div>
+            Objective
+        </div>
         <canvas id="objective"></canvas>
+    </div>
+    <div class="canvas-tile">
+        <div>
+            Progress
+        </div>
         <canvas id="score"></canvas>
     </div>
 </div>

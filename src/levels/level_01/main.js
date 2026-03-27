@@ -6,6 +6,17 @@ import {hillClimb} from "../../strategies/forager/hill-climb.js";
 window.onload = main
 
 function main() {
+    document.getElementById("intro-ok").addEventListener("click", () => {
+        document.getElementById("intro-overlay").classList.add("hidden");
+    });
+
+    document.getElementById("strategy-help").addEventListener("click", () => {
+        document.getElementById("strategy-overlay").classList.add("visible");
+    });
+    document.getElementById("strategy-ok").addEventListener("click", () => {
+        document.getElementById("strategy-overlay").classList.remove("visible");
+    });
+
     let config = {
         objective: smooth_valley,
         initialGuess: 9,
@@ -27,8 +38,6 @@ function main() {
         document.getElementById("stepSize").disabled = true;
         document.getElementById("strategy").disabled = true;
 
-        hideControls();
-
         optimize(config);
     })
 
@@ -46,6 +55,7 @@ function main() {
         document.getElementById("startButton").disabled = false;
         document.getElementById("strategy").disabled = false;
         document.getElementById("stepSize").disabled = false;
+        hideModal();
     })
 }
 
@@ -67,8 +77,6 @@ function step(config, x, bestGuess, scores) {
     let candidate = config.strategy.forager(bestGuess, config.stepSize);
     // let candidate = config.strategy(bestGuess, scores.length / config.numSteps);
 
-    // clamp so that we can always see it
-    candidate = Math.max(Math.min(candidate, 10), -10);
 
     // update scores and best guess
     let possibleScore = config.objective(candidate);
@@ -98,16 +106,20 @@ function step(config, x, bestGuess, scores) {
             requestAnimationFrame(() => step(config, x, bestGuess, scores));
         }, config.millisBetweenFrames);
     } else {
-        showControls();
+        let bestScore = config.objective(bestGuess);
+        let yValues = x.map(config.objective);
+        let goal = findMinimum(x, yValues).y;
+        showModal(Math.abs(bestScore - goal) < 0.05);
     }
 }
 
-function hideControls() {
-    const controls = document.getElementById("controls")
-    controls.style.display = "none";
+function showModal(reached) {
+    const result = document.getElementById("modal-result");
+    result.textContent = reached ? "You reached the objective!" : "You didn't reach the objective.";
+    result.className = reached ? "success" : "failure";
+    document.getElementById("modal").style.display = "flex";
 }
 
-function showControls() {
-    const controls = document.getElementById("controls")
-    controls.style.display = "flex";
+function hideModal() {
+    document.getElementById("modal").style.display = "none";
 }

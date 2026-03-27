@@ -88,7 +88,8 @@ function scaleX(val, xmin, xmax, width) {
 // ymin -> height
 // ymax -> 0
 function scaleY(val, ymin, ymax, height) {
-    return (ymax - val) / (ymax - ymin) * height;
+    let clamped = Math.max(ymin, Math.min(ymax, val));
+    return (ymax - clamped) / (ymax - ymin) * height;
 }
 
 export function findMinimum(xValues, yValues) {

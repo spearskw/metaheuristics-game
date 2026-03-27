@@ -8,27 +8,45 @@
 </head>
 <body>
 <h1>Level 3</h1>
+<div class="help-overlay" id="strategy-overlay">
+    <div class="help-card">
+        <h3>Strategies</h3>
+        <dl>
+            <dt>Hill Climb</dt>
+            <dd>Takes a random step left or right each turn. Only accepts the new position if it's better. Simple but can get stuck.</dd>
+        </dl>
+        <button id="strategy-ok">OK</button>
+    </div>
+</div>
 <div class="container">
-    <form id="form">
-        <div class="form-field">
-            <label for="strategy">Choose the strategy:</label>
-            <select name="strategy" id="strategy">
-                <option value="hill-climb">Hill climb</option>
-            </select>
+    <div class="form-wrapper">
+        <form id="form">
+            <div class="form-field">
+                <label for="strategy">Choose the strategy:</label>
+                <select name="strategy" id="strategy">
+                    <option value="hill-climb">Hill climb</option>
+                </select>
+                <button type="button" class="help-btn" id="strategy-help">?</button>
+            </div>
+            <div class="form-field">
+                <label for="stepSize">Choose step size</label>
+                <select name="stepSize" id="stepSize">
+                    <option value="0.1">0.1</option>
+                    <option value="0.5">0.5</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+            <button type="submit" id="startButton">Start</button>
+        </form>
+        <div id="modal">
+            <p id="modal-result"></p>
+            <button id="tryAgainButton">Try again</button>
+            <button id="nextLevelButton">Next level</button>
         </div>
-        <div class="form-field">
-            <label for="stepSize">Choose step size</label>
-            <select name="stepSize" id="stepSize">
-                <option value="0.1">0.1</option>
-                <option value="0.5">0.5</option>
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="5">5</option>
-                <option value="10">10</option>
-            </select>
-        </div>
-        <button type="submit" id="startButton">Start</button>
-    </form>
+    </div>
 </div>
 <div class="container">
     <div class="canvas-tile">
@@ -43,10 +61,6 @@
         </div>
         <canvas id="score"></canvas>
     </div>
-</div>
-<div class="container" id="controls">
-    <button id="tryAgainButton">Try again</button>
-    <button id="nextLevelButton">Next level</button>
 </div>
 </body>
 </html>
