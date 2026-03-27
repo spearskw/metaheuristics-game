@@ -7,6 +7,8 @@ import {
   isRouteFeasible,
   buildGreedySolution,
 } from '../../src/levels/level_11/cvrptw.js';
+import { mutateSolution, undoMutation } from '../../src/levels/level_11/mutations.js';
+import { geometricCooling, annealingAcceptor } from '../../src/levels/level_10/annealing.js';
 
 export const INSTANCE_TEXT = `C101
 
@@ -300,4 +302,38 @@ describe('buildGreedySolution', () => {
     const d = totalDistance(routes, dist);
     expect(d).toBeLessThan(1200);
   });
+});
+
+describe('simulated annealing convergence', () => {
+  it('reaches distance < 1000 within 500000 iterations', () => {
+    const instance = parseInstance(INSTANCE_TEXT);
+    const dist = computeDistanceMatrix(instance.customers);
+    const routes = buildGreedySolution(instance, dist);
+
+    let currentDistance = totalDistance(routes, dist);
+    let bestDistance = currentDistance;
+
+    const numIterations = 500000;
+    const initialTemp = 50;
+
+    for (let i = 0; i < numIterations; i++) {
+      const temperature = geometricCooling(initialTemp, i, numIterations);
+      const undo = mutateSolution(routes, instance, dist);
+
+      if (undo.type === 'noop') continue;
+
+      const candidateDistance = totalDistance(routes, dist);
+
+      if (annealingAcceptor(currentDistance, candidateDistance, temperature)) {
+        currentDistance = candidateDistance;
+        if (candidateDistance < bestDistance) {
+          bestDistance = candidateDistance;
+        }
+      } else {
+        undoMutation(routes, undo);
+      }
+    }
+
+    expect(bestDistance).toBeLessThan(1000);
+  }, 120000); // 2 minute timeout
 });
