@@ -225,6 +225,33 @@ export function totalCost(routes, instance, dist) {
 }
 
 /**
+ * Build a random initial solution — assigns customers to routes randomly.
+ * Starts infeasible (high penalties) so SA has room to improve visually.
+ * @param {{ numVehicles: number, vehicleCapacity: number, customers: Array }} instance
+ * @param {number} numRoutes - Number of routes to create
+ * @returns {number[][]} Array of routes
+ */
+export function buildRandomSolution(instance, numRoutes) {
+  const routes = [];
+  for (let i = 0; i < numRoutes; i++) routes.push([]);
+
+  // Shuffle customer IDs 1..N
+  const ids = [];
+  for (let i = 1; i < instance.customers.length; i++) ids.push(i);
+  for (let i = ids.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+  }
+
+  // Deal out to routes round-robin
+  for (let i = 0; i < ids.length; i++) {
+    routes[i % numRoutes].push(ids[i]);
+  }
+
+  return routes;
+}
+
+/**
  * Build a greedy solution using cheapest feasible insertion.
  * @param {{ numVehicles: number, vehicleCapacity: number, customers: Array }} instance
  * @param {Float64Array[]} dist
