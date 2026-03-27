@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Level 11 - Vehicle Routing</title>
+    <script src="main.js" type="module"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<h1>Vehicle Routing with Time Windows</h1>
+<div class="layout">
+    <div class="controls">
+        <label for="cooling-schedule">Cooling Schedule:</label>
+        <select id="cooling-schedule">
+            <option value="geometric" selected>Geometric</option>
+            <option value="linear">Linear</option>
+            <option value="linearReheat">Linear Reheat</option>
+            <option value="cosine">Cosine</option>
+        </select>
+
+        <label for="iterations">Iterations: <span id="iterations-value">200000</span></label>
+        <input type="range" id="iterations" min="10000" max="1000000" value="200000" step="10000">
+
+        <label for="temperature">Initial Temp: <span id="temperature-value">50</span></label>
+        <input type="range" id="temperature" min="1" max="500" value="50" step="1">
+
+        <label for="speed">Batch size: <span id="speed-value">500</span></label>
+        <input type="range" id="speed" min="10" max="5000" value="500" step="10">
+
+        <button id="start">Start</button>
+
+        <p>Iteration: <span id="iteration-display">-</span></p>
+        <p>Best Distance: <span id="distance-display">-</span></p>
+        <p>Routes: <span id="routes-display">-</span></p>
+        <p>Temperature: <span id="temp-display">-</span></p>
+    </div>
+    <div class="canvases">
+        <div class="canvas-tile">
+            <div>Routes</div>
+            <canvas id="route-canvas" width="500" height="500"></canvas>
+        </div>
+        <div class="canvas-tile">
+            <div>Score (Total Distance)</div>
+            <canvas id="score-canvas" width="480" height="480"></canvas>
+        </div>
+    </div>
+</div>
+</body>
+</html>
