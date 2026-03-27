@@ -1,4 +1,4 @@
-import {clear, plotCandidate, plotObjective, plotScore, setupCanvas} from "../../plotting/plotting.js";
+import {clear, plotFlag, plotTent, plotPerson, findMinimum, plotObjective, plotScore, setupCanvas} from "../../plotting/plotting.js";
 import {make_random_guess} from "../../strategies/forager/random.js";
 import {annealing_forager} from "../../strategies/forager/annealing.js";
 import {always_accept_if_better} from "../../strategies/acceptor/always_if_better.js";
@@ -105,10 +105,13 @@ function step(config, x, current, bestGuess, scores) {
     let scoreCanvas = document.getElementById("score");
     clear(objectiveCanvas)
     clear(scoreCanvas)
-    plotObjective(objectiveCanvas, x, x.map(config.objective));
-    plotCandidate(objectiveCanvas, candidate, config.objective(candidate), '#7e9daa');
-    plotCandidate(objectiveCanvas, bestGuess, config.objective(bestGuess), '#22b9ef');
-    plotScore(scoreCanvas, scores, config.numSteps)
+    let yValues = x.map(config.objective);
+    plotObjective(objectiveCanvas, x, yValues);
+    let min = findMinimum(x, yValues);
+    plotFlag(objectiveCanvas, min.x, min.y);
+    plotPerson(objectiveCanvas, candidate, config.objective(candidate));
+    plotTent(objectiveCanvas, bestGuess, config.objective(bestGuess));
+    plotScore(scoreCanvas, scores, config.numSteps, min.y)
 
     // iterate
     if (scores.length < config.numSteps && running) {

@@ -1,4 +1,4 @@
-import {clear, plotCandidate, plotObjective, plotScore, setupCanvas} from "../../plotting/plotting.js";
+import {clear, plotFlag, plotTent, plotPerson, findMinimum, plotObjective, plotScore, setupCanvas} from "../../plotting/plotting.js";
 import {always_accept_if_better} from "../../strategies/acceptor/always_if_better.js";
 import {smooth_valley} from "../../objectives/smooth_valley.js";
 import {hillClimb} from "../../strategies/forager/hill-climb.js";
@@ -84,10 +84,13 @@ function step(config, x, bestGuess, scores) {
     let scoreCanvas = document.getElementById("score");
     clear(objectiveCanvas);
     clear(scoreCanvas);
-    plotObjective(objectiveCanvas, x, x.map(config.objective));
-    plotCandidate(objectiveCanvas, bestGuess, config.objective(bestGuess), '#22b9ef');
-    plotCandidate(objectiveCanvas, candidate, config.objective(candidate), '#7e9daa');
-    plotScore(scoreCanvas, scores, config.numSteps);
+    let yValues = x.map(config.objective);
+    plotObjective(objectiveCanvas, x, yValues);
+    let min = findMinimum(x, yValues);
+    plotFlag(objectiveCanvas, min.x, min.y);
+    plotPerson(objectiveCanvas, candidate, config.objective(candidate));
+    plotTent(objectiveCanvas, bestGuess, config.objective(bestGuess));
+    plotScore(scoreCanvas, scores, config.numSteps, min.y);
 
     // iterate
     if (scores.length < config.numSteps) {
