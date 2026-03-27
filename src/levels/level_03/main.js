@@ -31,7 +31,7 @@ function main() {
     form.addEventListener("submit", (e) => {
         e.preventDefault();
 
-        config.strategy.forager = hillClimb;
+        config.strate/gy.forager = hillClimb;
         config.stepSize = e.target.stepSize.value;
 
         document.getElementById("startButton").disabled = true;
@@ -43,7 +43,7 @@ function main() {
 
     const nextLevelButton = document.getElementById("nextLevelButton");
     nextLevelButton.addEventListener("click", () => {
-        window.location.href = "../level_07/index.html"
+        window.location.href = "../level_04/index.html"
     })
 
     const tryAgainButton = document.getElementById("tryAgainButton");
