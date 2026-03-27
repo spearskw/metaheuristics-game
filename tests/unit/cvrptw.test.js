@@ -6,6 +6,10 @@ import {
   totalDistance,
   isRouteFeasible,
   buildGreedySolution,
+  routePenalties,
+  totalCost,
+  CAPACITY_PENALTY_WEIGHT,
+  TW_PENALTY_WEIGHT,
 } from '../../src/levels/level_11/cvrptw.js';
 import { mutateSolution, undoMutation } from '../../src/levels/level_11/mutations.js';
 import { geometricCooling, annealingAcceptor } from '../../src/levels/level_10/annealing.js';
@@ -304,36 +308,93 @@ describe('buildGreedySolution', () => {
   });
 });
 
+describe('routePenalties', () => {
+  const instance = parseInstance(INSTANCE_TEXT);
+  const dist = computeDistanceMatrix(instance.customers);
+
+  it('feasible route has zero penalties', () => {
+    const p = routePenalties([20], instance, dist);
+    expect(p.capacityPenalty).toBe(0);
+    expect(p.twPenalty).toBe(0);
+  });
+
+  it('empty route has zero penalties', () => {
+    const p = routePenalties([], instance, dist);
+    expect(p.capacityPenalty).toBe(0);
+    expect(p.twPenalty).toBe(0);
+  });
+
+  it('capacity violation produces capacity penalty', () => {
+    // demands: 40+40+40+40+40+40 = 240, excess = 40
+    const p = routePenalties([15, 16, 25, 33, 57, 93], instance, dist);
+    expect(p.capacityPenalty).toBe(40 * CAPACITY_PENALTY_WEIGHT);
+  });
+
+  it('time window violation produces TW penalty', () => {
+    // [21, 67]: After visiting 21, arrives at 67 way past dueDate 77
+    const p = routePenalties([21, 67], instance, dist);
+    expect(p.twPenalty).toBeGreaterThan(0);
+    expect(p.capacityPenalty).toBe(0); // demand 20+10=30 ≤ 200
+  });
+
+  it('known optimal route has zero penalties', () => {
+    const p = routePenalties([13, 17, 18, 19, 15, 16, 14, 12], instance, dist);
+    expect(p.capacityPenalty).toBe(0);
+    expect(p.twPenalty).toBe(0);
+  });
+});
+
+describe('totalCost', () => {
+  const instance = parseInstance(INSTANCE_TEXT);
+  const dist = computeDistanceMatrix(instance.customers);
+
+  it('feasible solution has total = distance (zero penalties)', () => {
+    const routes = buildGreedySolution(instance, dist);
+    const cost = totalCost(routes, instance, dist);
+    expect(cost.capacityPenalty).toBe(0);
+    expect(cost.twPenalty).toBe(0);
+    expect(cost.total).toBeCloseTo(cost.distance, 5);
+  });
+
+  it('distance component matches totalDistance', () => {
+    const routes = buildGreedySolution(instance, dist);
+    const cost = totalCost(routes, instance, dist);
+    expect(cost.distance).toBeCloseTo(totalDistance(routes, dist), 5);
+  });
+});
+
 describe('simulated annealing convergence', () => {
-  it('reaches distance < 1000 within 500000 iterations', () => {
+  it('reaches distance < 1000 with zero penalties within 500000 iterations', () => {
     const instance = parseInstance(INSTANCE_TEXT);
     const dist = computeDistanceMatrix(instance.customers);
     const routes = buildGreedySolution(instance, dist);
 
-    let currentDistance = totalDistance(routes, dist);
-    let bestDistance = currentDistance;
+    let currentTotal = totalCost(routes, instance, dist).total;
+    let bestCost = totalCost(routes, instance, dist);
 
     const numIterations = 500000;
     const initialTemp = 50;
 
     for (let i = 0; i < numIterations; i++) {
       const temperature = geometricCooling(initialTemp, i, numIterations);
-      const undo = mutateSolution(routes, instance, dist);
+      const undo = mutateSolution(routes);
 
       if (undo.type === 'noop') continue;
 
-      const candidateDistance = totalDistance(routes, dist);
+      const candidateCost = totalCost(routes, instance, dist);
 
-      if (annealingAcceptor(currentDistance, candidateDistance, temperature)) {
-        currentDistance = candidateDistance;
-        if (candidateDistance < bestDistance) {
-          bestDistance = candidateDistance;
+      if (annealingAcceptor(currentTotal, candidateCost.total, temperature)) {
+        currentTotal = candidateCost.total;
+        if (candidateCost.total < bestCost.total) {
+          bestCost = { ...candidateCost };
         }
       } else {
         undoMutation(routes, undo);
       }
     }
 
-    expect(bestDistance).toBeLessThan(1000);
-  }, 120000); // 2 minute timeout
+    expect(bestCost.distance).toBeLessThan(1000);
+    expect(bestCost.capacityPenalty).toBe(0);
+    expect(bestCost.twPenalty).toBe(0);
+  }, 120000);
 });

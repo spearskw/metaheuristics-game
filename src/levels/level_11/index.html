@@ -37,6 +37,8 @@
 
         <p>Iteration: <span id="iteration-display">-</span></p>
         <p>Best Distance: <span id="distance-display">-</span></p>
+        <p style="color: #c0392b">Capacity Penalty: <span id="capacity-penalty-display">-</span></p>
+        <p style="color: #e67e22">TW Penalty: <span id="tw-penalty-display">-</span></p>
         <p>Routes: <span id="routes-display">-</span></p>
         <p>Temperature: <span id="temp-display">-</span></p>
     </div>
@@ -46,7 +48,7 @@
             <canvas id="route-canvas" width="500" height="500"></canvas>
         </div>
         <div class="canvas-tile">
-            <div>Score (Total Distance)</div>
+            <div>Score — <span style="color:#4363d8">Distance</span> · <span style="color:#c0392b">Capacity (hard)</span> · <span style="color:#e67e22">Time Windows (soft)</span></div>
             <canvas id="score-canvas" width="480" height="480"></canvas>
         </div>
     </div>

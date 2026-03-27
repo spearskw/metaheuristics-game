@@ -111,6 +111,21 @@ test.describe('Level 11 - Vehicle Routing', () => {
     expect(canvasBefore.equals(canvasAfter)).toBe(false);
   });
 
+  test('penalty displays are visible after optimization', async ({ page }) => {
+    await page.locator('#iterations').fill('10000');
+    await page.locator('#speed').fill('5000');
+
+    await page.locator('#start').click();
+    await expect(page.locator('#start')).toHaveText('Start', { timeout: 30000 });
+
+    // Capacity and TW penalty elements should show numeric values
+    const capText = await page.locator('#capacity-penalty-display').textContent();
+    expect(parseFloat(capText)).not.toBeNaN();
+
+    const twText = await page.locator('#tw-penalty-display').textContent();
+    expect(parseFloat(twText)).not.toBeNaN();
+  });
+
   test('shows correct number of routes', async ({ page }) => {
     await page.locator('#iterations').fill('10000');
     await page.locator('#speed').fill('5000');
