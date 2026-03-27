@@ -7,6 +7,7 @@ test.describe('Level 11 - Vehicle Routing', () => {
 
   test('page loads with all controls', async ({ page }) => {
     await expect(page.locator('h1')).toHaveText('Vehicle Routing with Time Windows');
+    await expect(page.locator('#instance')).toBeVisible();
     await expect(page.locator('#iterations')).toBeVisible();
     await expect(page.locator('#temperature')).toBeVisible();
     await expect(page.locator('#speed')).toBeVisible();
@@ -14,6 +15,27 @@ test.describe('Level 11 - Vehicle Routing', () => {
     await expect(page.locator('#start')).toBeVisible();
     await expect(page.locator('#route-canvas')).toBeVisible();
     await expect(page.locator('#score-canvas')).toBeVisible();
+  });
+
+  test('instance dropdown has all three options', async ({ page }) => {
+    const options = page.locator('#instance option');
+    await expect(options).toHaveCount(3);
+    await expect(options.nth(0)).toHaveText('C101 (100 stops)');
+    await expect(options.nth(1)).toHaveText('C1_4_1 (400 stops)');
+    await expect(options.nth(2)).toHaveText('C1_10_1 (1000 stops)');
+  });
+
+  test('400-stop instance loads and runs', async ({ page }) => {
+    await page.locator('#instance').selectOption('c1_4_1.txt');
+    await page.locator('#iterations').fill('10000');
+    await page.locator('#speed').fill('2000');
+
+    await page.locator('#start').click();
+    await expect(page.locator('#start')).toHaveText('Start', { timeout: 60000 });
+
+    const distText = await page.locator('#distance-display').textContent();
+    const dist = parseFloat(distText);
+    expect(dist).toBeGreaterThan(0);
   });
 
   test('sliders update their display values', async ({ page }) => {

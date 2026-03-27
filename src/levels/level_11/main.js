@@ -46,7 +46,8 @@ async function toggleRun() {
   const scheduleName = document.getElementById('cooling-schedule').value;
   const coolingFn = coolingSchedules[scheduleName];
 
-  const response = await fetch('c101.txt');
+  const instanceFile = document.getElementById('instance').value;
+  const response = await fetch(instanceFile);
   const text = await response.text();
   const instance = parseInstance(text);
   const dist = computeDistanceMatrix(instance.customers);
