@@ -6,6 +6,10 @@ import {needle_in_haystack} from "../../objectives/needle_in_haystack.js";
 window.onload = main;
 
 function main() {
+    document.getElementById("intro-ok").addEventListener("click", () => {
+        document.getElementById("intro-overlay").classList.add("hidden");
+    });
+
     document.getElementById("strategy-help").addEventListener("click", () => {
         document.getElementById("strategy-overlay").classList.add("visible");
     });

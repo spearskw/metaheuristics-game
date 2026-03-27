@@ -97,7 +97,18 @@ test.describe('Level 2 - Bumpy Valley', () => {
     await page.goto('/levels/level_02/index.html');
   });
 
+  test('shows intro modal on load', async ({ page }) => {
+    await expect(page.locator('#intro-overlay')).toBeVisible();
+    await expect(page.locator('.intro h2')).toHaveText('Bumpy terrain!');
+  });
+
+  test('intro modal dismisses on OK', async ({ page }) => {
+    await page.locator('#intro-ok').click();
+    await expect(page.locator('#intro-overlay')).toHaveClass(/hidden/);
+  });
+
   test('page loads with controls', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await expect(page.locator('h1')).toHaveText('Level 2');
     await expect(page.locator('#strategy')).toBeVisible();
     await expect(page.locator('#stepSize')).toBeVisible();
@@ -105,6 +116,7 @@ test.describe('Level 2 - Bumpy Valley', () => {
   });
 
   test('strategy help modal works', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await page.locator('#strategy-help').click();
     await expect(page.locator('#strategy-overlay')).toHaveClass(/visible/);
     await page.locator('#strategy-ok').click();
@@ -112,6 +124,7 @@ test.describe('Level 2 - Bumpy Valley', () => {
   });
 
   test('optimization completes and shows modal', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await page.locator('#stepSize').selectOption('2');
     await page.locator('#startButton').click();
 
@@ -121,6 +134,7 @@ test.describe('Level 2 - Bumpy Valley', () => {
   });
 
   test('try again resets controls', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await page.locator('#stepSize').selectOption('1');
     await page.locator('#startButton').click();
 
@@ -132,6 +146,7 @@ test.describe('Level 2 - Bumpy Valley', () => {
   });
 
   test('next level navigates to level 3', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await page.locator('#stepSize').selectOption('1');
     await page.locator('#startButton').click();
 
@@ -147,7 +162,18 @@ test.describe('Level 3 - Needle in Haystack', () => {
     await page.goto('/levels/level_03/index.html');
   });
 
+  test('shows intro modal on load', async ({ page }) => {
+    await expect(page.locator('#intro-overlay')).toBeVisible();
+    await expect(page.locator('.intro h2')).toHaveText('Needle in a haystack!');
+  });
+
+  test('intro modal dismisses on OK', async ({ page }) => {
+    await page.locator('#intro-ok').click();
+    await expect(page.locator('#intro-overlay')).toHaveClass(/hidden/);
+  });
+
   test('page loads with controls', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await expect(page.locator('h1')).toHaveText('Level 3');
     await expect(page.locator('#strategy')).toBeVisible();
     await expect(page.locator('#stepSize')).toBeVisible();
@@ -155,6 +181,7 @@ test.describe('Level 3 - Needle in Haystack', () => {
   });
 
   test('optimization completes and shows modal', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await page.locator('#stepSize').selectOption('0.5');
     await page.locator('#startButton').click();
 
@@ -164,6 +191,7 @@ test.describe('Level 3 - Needle in Haystack', () => {
   });
 
   test('next level navigates to level 7', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await page.locator('#stepSize').selectOption('1');
     await page.locator('#startButton').click();
 
@@ -179,7 +207,18 @@ test.describe('Level 4 - Hill Climb vs Adaptive', () => {
     await page.goto('/levels/level_04/index.html');
   });
 
+  test('shows intro modal on load', async ({ page }) => {
+    await expect(page.locator('#intro-overlay')).toBeVisible();
+    await expect(page.locator('.intro h2')).toHaveText('A new strategy!');
+  });
+
+  test('intro modal dismisses on OK', async ({ page }) => {
+    await page.locator('#intro-ok').click();
+    await expect(page.locator('#intro-overlay')).toHaveClass(/hidden/);
+  });
+
   test('page loads with all controls', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await expect(page.locator('h1')).toHaveText('Level 4');
     await expect(page.locator('#strategy')).toBeVisible();
     await expect(page.locator('#map')).toBeVisible();
@@ -188,6 +227,7 @@ test.describe('Level 4 - Hill Climb vs Adaptive', () => {
   });
 
   test('switching to adaptive shows correct params', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await expect(page.locator('#hill-climb-params')).toBeVisible();
     await expect(page.locator('#adaptive-params')).toBeHidden();
 
@@ -198,6 +238,7 @@ test.describe('Level 4 - Hill Climb vs Adaptive', () => {
   });
 
   test('switching back to hill climb restores params', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await page.locator('#strategy').selectOption('adaptive');
     await page.locator('#strategy').selectOption('hill-climb');
 
@@ -206,6 +247,7 @@ test.describe('Level 4 - Hill Climb vs Adaptive', () => {
   });
 
   test('strategy help modal shows both strategies', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await page.locator('#strategy-help').click();
     await expect(page.locator('#strategy-overlay')).toHaveClass(/visible/);
     await expect(page.locator('#strategy-overlay dt').first()).toHaveText('Hill Climb');
@@ -215,6 +257,7 @@ test.describe('Level 4 - Hill Climb vs Adaptive', () => {
   });
 
   test('hill climb optimization completes', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await page.locator('#strategy').selectOption('hill-climb');
     await page.locator('#map').selectOption('smooth_valley');
     await page.locator('#stepSize').selectOption('2');
@@ -226,6 +269,7 @@ test.describe('Level 4 - Hill Climb vs Adaptive', () => {
   });
 
   test('adaptive optimization completes', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await page.locator('#strategy').selectOption('adaptive');
     await page.locator('#map').selectOption('smooth_valley');
     await page.locator('#initialStepSize').selectOption('10');
@@ -237,6 +281,7 @@ test.describe('Level 4 - Hill Climb vs Adaptive', () => {
   });
 
   test('can switch maps', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await page.locator('#map').selectOption('bumpy_valley');
     await expect(page.locator('#map')).toHaveValue('bumpy_valley');
 
@@ -245,6 +290,7 @@ test.describe('Level 4 - Hill Climb vs Adaptive', () => {
   });
 
   test('try again resets all controls', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await page.locator('#strategy').selectOption('adaptive');
     await page.locator('#map').selectOption('bumpy_valley');
     await page.locator('#initialStepSize').selectOption('5');
@@ -260,6 +306,7 @@ test.describe('Level 4 - Hill Climb vs Adaptive', () => {
   });
 
   test('next level navigates to level 7', async ({ page }) => {
+    await page.locator('#intro-ok').click();
     await page.locator('#stepSize').selectOption('2');
     await page.locator('#startButton').click();
 
