@@ -77,11 +77,12 @@ async function onInstanceChange() {
   const scoreCanvas = document.getElementById('score-canvas');
   scoreCanvas.getContext('2d').clearRect(0, 0, scoreCanvas.width, scoreCanvas.height);
 
-  // Reset stats
+  // Reset stats and thermometer
   document.getElementById('iteration-display').textContent = '-';
   document.getElementById('distance-display').textContent = '-';
   document.getElementById('routes-display').textContent = '-';
   document.getElementById('temp-display').textContent = '-';
+  resetThermometer();
 
   // Fetch and render the new instance's stops
   const instanceFile = document.getElementById('instance').value;
@@ -144,6 +145,7 @@ async function toggleRun() {
   };
 
   renderRoutes(document.getElementById('route-canvas'), state.routes, state.instance);
+  updateThermometer(initialTemp);
   requestAnimationFrame(() => runBatch(state));
 }
 
@@ -309,4 +311,31 @@ function updateStats(state) {
   document.getElementById('distance-display').textContent = state.bestDistance.toFixed(2);
   document.getElementById('routes-display').textContent = state.bestRoutes.length;
   document.getElementById('temp-display').textContent = temperature.toFixed(2);
+  updateThermometer(temperature);
+}
+
+function updateThermometer(temperature) {
+  const maxTemp = 100;
+  const pct = Math.max(0, Math.min(100, (temperature / maxTemp) * 100));
+  const fill = document.getElementById('thermo-fill');
+  const bulbFill = document.getElementById('thermo-bulb-fill');
+  const label = document.getElementById('thermo-temp');
+
+  fill.style.height = pct + '%';
+
+  // Color gradient: cool blue/gray at low temp, orange in middle, red at high
+  const r = Math.round(229 * Math.max(pct, 30) / 100);
+  const g = Math.round(100 * (1 - pct / 100));
+  const b = Math.round(180 * (1 - pct / 100));
+  const color = `rgb(${r},${g},${b})`;
+  fill.style.background = `linear-gradient(to top, ${color}, #f6ad55)`;
+  bulbFill.style.background = color;
+
+  label.textContent = temperature.toFixed(1);
+}
+
+function resetThermometer() {
+  document.getElementById('thermo-fill').style.height = '0%';
+  document.getElementById('thermo-bulb-fill').style.background = '#ccc';
+  document.getElementById('thermo-temp').textContent = '-';
 }

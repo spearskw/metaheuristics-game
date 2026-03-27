@@ -26,8 +26,8 @@ h1 {
 
 .canvases {
     display: flex;
-    flex-wrap: wrap;
     gap: 1rem;
+    align-items: center;
 }
 
 .canvas-tile {
@@ -51,4 +51,91 @@ h1 {
     border-radius: 0.75rem;
     width: 500px;
     height: 500px;
+}
+
+/* Thermometer */
+.thermometer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    font-family: Calibri, sans-serif;
+    align-self: center;
+}
+
+.thermo-label {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 6px;
+    white-space: nowrap;
+}
+
+.thermo-tube {
+    position: relative;
+    width: 28px;
+    height: 400px;
+    background: #e8ecf0;
+    border: 3px solid #888;
+    border-radius: 14px 14px 0 0;
+    overflow: hidden;
+    box-shadow: inset 2px 0 4px rgba(0,0,0,0.1);
+}
+
+.thermo-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 0%;
+    background: linear-gradient(to top, #e53e3e, #f6ad55);
+    border-radius: 0;
+    transition: none;
+}
+
+.thermo-tick {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    border-top: 1px dashed #aaa;
+}
+
+.thermo-tick span {
+    position: absolute;
+    left: 32px;
+    top: -8px;
+    font-size: 0.7rem;
+    color: #888;
+    white-space: nowrap;
+}
+
+.thermo-bulb {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    background: #e8ecf0;
+    border: 3px solid #888;
+    border-radius: 50%;
+    margin-top: -3px;
+    overflow: hidden;
+    box-shadow: 1px 2px 4px rgba(0,0,0,0.15);
+}
+
+.thermo-bulb-fill {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: #e53e3e;
+    transition: none;
+}
+
+.thermo-shine {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    width: 10px;
+    height: 10px;
+    background: rgba(255,255,255,0.45);
+    border-radius: 50%;
 }
